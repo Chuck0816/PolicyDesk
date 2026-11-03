@@ -1,0 +1,54 @@
+PolicyDesk Employee Benefits Policy
+Policy ID: HR-BEN-001
+Version: 1.0
+Policy owner: Human Resources (HR)
+Scope: Optional company benefits for employees of the fictional PolicyDesk company.
+All amounts and eligibility rules in this document are illustrative sample data.
+
+1. Benefits administration
+HR maintains benefit eligibility and answers enrollment questions. Finance reviews reimbursement evidence and processes approved claims. Managers confirm that work-related development supports the employee's role. These benefits are separate from base salary and business travel reimbursement, and must not be treated as an automatic salary supplement.
+
+2. Eligibility and enrollment
+Regular full-time employees may enroll in the listed optional benefits from their recorded employment start date unless a particular benefit states otherwise. Contractors and interns do not automatically qualify for these benefits; HR must confirm their separate arrangements. Employees should complete initial enrollment within thirty calendar days after joining.
+
+3. Annual benefit period
+The benefit year runs from January 1 through December 31. Reimbursement budgets are individual limits, not guaranteed cash payments. Unused annual budgets do not carry forward and cannot be exchanged for salary. For new starters, HR prorates annual budgets by remaining calendar months, including the month of joining.
+
+4. Learning and professional development
+The annual learning reimbursement budget is CNY 3,000 per eligible employee. Relevant courses, professional books, certification exams, and approved conferences may qualify. Employees must obtain direct manager approval before purchase and attach the provider details, learning objective, cost, and expected benefit to their role.
+
+5. Learning approval and evidence
+Requests exceeding the available learning budget require department head and HR approval before purchase, with Finance confirming the additional funding. Claims must include an invoice, payment evidence, and proof of participation or completion when available. Approval of a course does not automatically authorize paid study leave or additional overtime.
+
+6. Wellbeing allowance
+Eligible employees may claim up to CNY 1,200 per benefit year for a gym membership, sports class, or approved wellbeing program. The expense must be incurred by the employee for their own participation. Personal sporting equipment, companion memberships, and unapproved cash vouchers are excluded from the wellbeing allowance.
+
+7. Annual health check
+The company provides one health check per benefit year through the HR-designated provider. Employees should book through HR rather than purchasing an independent package and assuming reimbursement. HR receives attendance confirmation only; detailed examination results remain private and must not be added to shared team documents.
+
+8. Employee assistance service
+Employees can request up to six confidential counseling sessions per benefit year through the designated employee assistance provider. HR explains how to book without requiring an employee to disclose a diagnosis to their manager. The provider explains its own confidentiality arrangements before the employee shares personal information.
+
+9. Home office equipment
+Employees with an approved remote or hybrid arrangement may claim up to CNY 1,500 for approved home office equipment once in a rolling twenty-four-month period. IT must approve compatibility before purchase, and the direct manager approves the business need. Company-funded equipment is recorded as a company asset unless HR explicitly states otherwise.
+
+10. Meal and transport benefits
+This document does not create a general monthly meal allowance or commuting allowance. Necessary meals and local transport during approved business travel follow travel_policy.txt. Employees must not submit the same meal or transport invoice under both a benefit budget and a business travel claim.
+
+11. Submitting benefit claims
+Employees must submit a complete benefit claim within thirty calendar days after the expense date and no later than January 10 for expenses incurred in the previous benefit year. Both limits apply. Claims must identify the benefit category, expense date, amount, prior approval when required, and supporting invoices.
+
+12. Reimbursement timing
+Finance targets payment within ten working days after receiving a complete approved claim. The review pauses while missing evidence is being supplied. A benefit claim rejected because it exceeds an available budget must include the reason and the amount, if any, that remains eligible for reimbursement.
+
+13. Changes in employment status
+Employees must notify HR within ten calendar days of a change that may affect benefit enrollment or eligibility. HR confirms any resulting change in writing. A change of grade does not automatically increase learning or wellbeing budgets. Coverage for family members is not defined here and requires separate HR confirmation.
+
+14. Leave and benefit entitlements
+Leave requests follow leave_policy.txt, while compensatory time follows overtime_policy.txt. This benefits document does not define annual leave allowances, leave carryover, or leave pay. Employees must ask HR about those terms rather than treating the learning budget or wellbeing allowance as evidence of a leave entitlement.
+
+15. Departure and company assets
+Before leaving the company, employees should submit eligible outstanding claims by their final working day whenever possible. HR confirms any remaining claim deadline under the applicable arrangement. Company-funded home office assets must be returned through IT's asset process. An unused benefit budget is not paid as a departure bonus.
+
+16. Privacy and exceptions
+Individual health information and assistance-service details are Restricted information under information_classification_policy.txt. General benefit rules may be shared internally. HR and Finance must approve benefit exceptions in writing before an employee commits to the expense. A manager's informal suggestion does not change the published eligibility rules or spending limits.

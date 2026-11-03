@@ -1,0 +1,54 @@
+PolicyDesk Information Classification and Handling Policy
+Policy ID: SEC-CLASS-001
+Version: 1.0
+Policy owner: Security and IT
+Scope: Information created, received, stored, or shared by the fictional PolicyDesk company.
+This document contains sample handling rules, not actual company secrets or personal records.
+
+1. Classification framework
+Company information has four levels, from least to most sensitive: Public, Internal, Confidential, and Restricted. Classification describes the potential impact of inappropriate disclosure or modification. A person's grade or job title does not determine document access. Access must be justified by the person's actual business responsibilities.
+
+2. Information owner responsibilities
+Each department head assigns an owner for the department's important information sets. The owner sets the classification, approves appropriate access, and reviews sharing needs. Security and IT provides the approved tools and handling guidance. Employees must ask the owner or Security when the classification of a document is unclear.
+
+3. Public information
+Public information has been explicitly approved for unrestricted distribution. Examples include a published product brochure, an approved job posting, and an announcement already released on the official website. Employees may share the approved public version. A draft announcement is not Public merely because the team intends to publish it later.
+
+4. Internal information
+Internal information is intended for authorized employees and approved contractors with a relevant business need. Examples include general employee policy documents, routine operating instructions, and non-sensitive team schedules. Store it in company-managed systems. External distribution requires the information owner's approval, even if the document does not contain an obvious secret.
+
+5. Confidential information
+Confidential information could cause material business harm if disclosed inappropriately. Examples include unreleased product plans, vendor contract drafts, internal financial forecasts, source code, and individual promotion review packets. Access is limited to approved groups with a defined need. Store it only in approved systems with access controls and encryption enabled.
+
+6. Restricted information
+Restricted information carries the highest sensitivity in this sample framework. Examples include live credentials, private signing keys, individual payroll records, government identity documents, medical records, and customer authentication secrets. Access requires the information owner's approval and Security approval. Use only systems that Security has specifically approved for Restricted information.
+
+7. Grades and access are separate
+L1 through L5 are career grades, not automatic security clearance levels. An L5 employee cannot access every Restricted record, and an L1 employee may receive narrowly scoped access when the role requires it. Managers must identify the dataset, permitted actions, and business reason in an access request.
+
+8. Labeling and default handling
+Employees should place the classification in a document header or the approved system's metadata. Unlabeled information must be treated as Internal until the owner reviews it. If the content includes a more sensitive item, apply the higher level immediately. Combining several documents requires the combined document to use the highest applicable classification.
+
+9. Internal access approval
+For Internal information, the information owner or an authorized group administrator may approve access. Confidential access requires explicit owner approval and a defined recipient group. Restricted access additionally requires Security approval and a recorded review date. A requestor's direct manager supports the business need but does not replace the owner's approval.
+
+10. External sharing approval
+Public material may be shared in its approved published form. External sharing of Internal or Confidential material requires owner approval and an approved company sharing channel. Confidential sharing also requires a recorded confidentiality arrangement. Restricted sharing requires owner and Security approval, with HR or Finance review when those departments own the affected records.
+
+11. Approved transfer methods
+Employees must use company-managed email, approved collaboration systems, or a Security-approved transfer service. Confidential and Restricted transfers must use encrypted transport and recipient-specific access. Public links, personal email, and personal cloud storage must not be used for non-public information. Passwords and decryption secrets must not be sent in the same message as the protected file.
+
+12. Use of external AI services
+Only Public information may be submitted to a generally available external AI tool without an additional review. Internal or Confidential inputs require information owner and Security approval of the specific service and use case. Restricted inputs are prohibited in general-purpose external AI services under this sample policy. Redacting a filename alone does not make sensitive content Public.
+
+13. Access reviews and transfers
+Owners review Confidential access at least every ninety calendar days and Restricted access at least every thirty calendar days. Managers notify Security and IT before an employee changes roles or leaves the company. Access that is no longer required must be removed by the end of the employee's final authorized working day.
+
+14. Suspected disclosure or loss
+Employees must report a suspected leak, misdirected message, lost device, or exposed credential to Security immediately, with a target of within one hour after discovery. Include the time, affected system, and known recipients. Do not delete evidence or privately negotiate with recipients. Security coordinates containment, investigation, and any further notifications.
+
+15. Retention, disposal, and reclassification
+Information owners assign retention requirements and approve disposal with Security guidance. Employees must not invent a universal retention period or delete records subject to a preservation instruction. Only the owner may approve a downgrade in classification; downgrading Restricted information also requires Security approval and a documented reason.
+
+16. Policy library boundary
+The PolicyDesk sample library contains general policy rules, including this classification framework. It does not contain actual payslips, passwords, medical records, private personnel files, or live customer data. A policy describing Restricted information is not itself a repository of Restricted records. Questions about a real dataset must be referred to its owner and Security.

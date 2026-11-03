@@ -1,10 +1,21 @@
 [theme]
-base = "light"
+font = "sans serif"
+showSidebarBorder = true
+
+[theme.light]
 primaryColor = "#315dcc"
 backgroundColor = "#f6f8fc"
 secondaryBackgroundColor = "#ffffff"
 textColor = "#18263e"
-font = "sans serif"
+borderColor = "#e0e5ed"
+
+[theme.dark]
+primaryColor = "#4867d6"
+backgroundColor = "#0f1726"
+secondaryBackgroundColor = "#18243a"
+textColor = "#e7edf7"
+borderColor = "#33435c"
+linkColor = "#a8c3ff"
 
 [server]
 address = "127.0.0.1"

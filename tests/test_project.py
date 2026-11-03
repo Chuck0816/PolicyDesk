@@ -16,7 +16,7 @@ from llama_index.core.vector_stores import SimpleVectorStore
 
 import services
 import storage
-from ingestion import load_documents
+from ingestion import DATA_DIR, load_documents
 from main import build_index
 from prompts import CHAT_PROMPT, QA_PROMPT, RICH_PROMPT
 
@@ -84,12 +84,10 @@ def test_memory_restores_the_matching_session_only(functions):
     assert functions.build_chat_memory(store, "another-session").get() == []
 
 
-def test_loading_includes_two_files_and_a_manual_document():
-    assert {doc.metadata["file_name"] for doc in load_documents()} == {
-        "travel_policy.txt",
-        "leave_policy.txt",
-        "manual_faq",
-    }
+def test_loading_includes_all_policy_files_and_a_manual_document():
+    policy_files = {path.name for path in DATA_DIR.glob("*.txt")}
+    assert policy_files
+    assert {doc.metadata["file_name"] for doc in load_documents()} == policy_files | {"manual_faq"}
 
 
 def test_three_prompt_styles_render_the_same_inputs():

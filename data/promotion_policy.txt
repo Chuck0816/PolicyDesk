@@ -1,0 +1,54 @@
+PolicyDesk Career Levels and Promotion Policy
+Policy ID: HR-PROMO-001
+Version: 1.0
+Policy owner: Human Resources (HR)
+Scope: Career progression for employees of the fictional PolicyDesk company.
+This document is sample internal policy data for the PolicyDesk application.
+
+1. Purpose and decision principles
+Promotions recognize demonstrated work at a broader level of responsibility. Decisions must use evidence of sustained contribution, role scope, and business need. Time in role, personal relationships, or an isolated successful project do not by themselves establish promotion readiness. HR reviews the process for consistent application across departments.
+
+2. Career level framework
+L1 employees deliver defined tasks with regular guidance. L2 employees independently own routine work. L3 employees lead complex projects and support colleagues across a team. L4 employees define direction across teams or a major specialist area. L5 employees shape company-level outcomes within their professional discipline or assigned leadership scope.
+
+3. Individual contributor and management paths
+Employees can progress through specialist or management responsibilities. Moving to a higher grade does not automatically appoint an employee as a team manager or department head. Formal reporting authority follows company_hierarchy_policy.txt. A person may be a senior individual contributor while continuing to report to a designated people manager.
+
+4. Review windows
+Formal promotion reviews occur twice each year. Managers submit nominations by March 15 for the April review or September 15 for the October review. Employees may discuss development throughout the year. A missed nomination deadline normally moves the case to the next review window unless HR approves an exceptional review.
+
+5. Minimum eligibility
+An employee normally needs at least twelve months in the current grade and a performance rating of Meets Expectations or higher in the two most recent completed quarterly reviews. HR checks these conditions before a panel review. Meeting the conditions allows consideration; it does not guarantee promotion or replace evidence of next-level work.
+
+6. Readiness evidence
+A nomination must include at least two completed work examples from the previous six months. Examples should explain the employee's own contribution, measurable outcome, collaboration, and decisions made at the proposed level. Project size alone is insufficient if the evidence does not demonstrate broader responsibility or independent judgment.
+
+7. Employee and manager responsibilities
+Employees prepare a concise evidence summary and discuss it with their direct manager before the submission deadline. Managers assess gaps, provide feedback, and decide whether to nominate the employee. A manager declining a nomination must explain the main reasons and agree on practical development actions with the employee.
+
+8. Nomination packet
+The packet must identify the current grade, proposed grade, current role, proposed scope, performance history, and supporting work examples. It must also describe the continuing business need for the broader role. HR may return an incomplete packet and request corrections before it can be considered by the panel.
+
+9. Panel review
+HR coordinates a panel consisting of the department head and at least two reviewers familiar with the role's discipline. Reviewers assess the same level expectations and record the basis for their recommendation. A reviewer with a personal conflict must disclose it and be replaced. The employee's manager may provide evidence but must not decide the case alone.
+
+10. Approval authority
+Promotions to L2 or L3 require department head approval and HR validation after panel review. Promotions to L4 or L5 additionally require Managing Director approval. Finance confirms funding for any associated compensation proposal. No approval is complete until the employee receives the formal decision from HR.
+
+11. Exceptional review requests
+A review outside the normal windows or before twelve months in grade requires a written exception from the department head and HR before nomination. The request must explain the exceptional business need and sustained evidence. An exception changes the review timing or eligibility gate, not the standards for the proposed level.
+
+12. Outcomes and communication
+Possible outcomes are approved, deferred pending specific evidence, or declined for the current review. HR targets communication within ten working days after the panel meeting. A deferral must identify missing evidence and a proposed follow-up date. Employees should not announce a promotion before receiving written confirmation.
+
+13. Effective dates and salary
+Promotions approved in the April review normally take effect on May 1. Promotions approved in the October review normally take effect on November 1. Any different date must be stated in the HR letter. Salary changes follow salary_policy.txt and require separate approval; there is no automatic fixed percentage increase.
+
+14. Appeals and process concerns
+Employees may ask HR to review a procedural error or missing evidence within ten working days after receiving the decision. HR assigns a reviewer who did not make the original decision. A review checks the specific concern; it does not automatically reopen every rating or guarantee a different promotion outcome.
+
+15. Development after a decision
+After a deferred or declined case, the manager and employee should agree on a development plan within fifteen working days. The plan should include two or three measurable goals, support needed, and a check-in date. A lateral transfer or temporary acting assignment is not a promotion unless HR formally changes the grade.
+
+16. Records and fairness
+HR retains the decision, panel rationale, and approved level information with access limited to authorized staff. Individual review packets are Confidential information. Employees may report bias or retaliation through HR or the Managing Director. Promotion decisions must not be based on access to another employee's private salary or medical records.

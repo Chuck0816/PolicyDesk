@@ -1,0 +1,54 @@
+PolicyDesk Salary and Payroll Policy
+Policy ID: HR-PAY-001
+Version: 1.0
+Policy owners: Human Resources (HR) and Finance
+Scope: Employees paid through the fictional PolicyDesk company's domestic monthly payroll.
+All amounts and salary bands in this document are illustrative company rules, not real employee records.
+
+1. Salary components
+An employee's compensation may include fixed monthly base salary, an approved variable bonus, and separately approved allowances. The written offer and subsequent signed changes define the employee's actual package. Reimbursement of a business expense is not base salary and must follow the relevant expense policy.
+
+2. Monthly payroll cycle
+The salary period is the first through the last calendar day of each month. Regular base salary is paid on the twenty-fifth calendar day of that month. If the twenty-fifth is a weekend or company banking holiday, Finance pays on the preceding working day. A payslip identifies the period to which each payment belongs.
+
+3. Payroll input deadline
+Approved changes to salary, bank details, allowances, and variable payments must reach Payroll by 12:00 on the tenth calendar day of the payroll month. If the tenth is not a working day, the deadline is the preceding working day at 12:00. Payroll confirms the processing month for information received after the cutoff.
+
+4. Employee bank details
+Employees must provide an account in their own name through the approved HR channel. Bank detail changes require identity verification by HR and confirmation from Payroll. Employees should submit a change at least five working days before the payroll input deadline. A manager cannot redirect another employee's salary by email.
+
+5. Illustrative salary bands
+The fictional monthly gross base salary bands are L1: CNY 8,000 to 12,000; L2: CNY 12,000 to 18,000; L3: CNY 18,000 to 28,000; L4: CNY 28,000 to 40,000; and L5: CNY 40,000 to 60,000. Bands describe planning ranges and do not determine any particular employee's actual salary.
+
+6. Grade and salary placement
+HR considers role scope, relevant experience, demonstrated capability, and internal consistency when recommending placement within a band. Overlapping boundaries do not automatically qualify an employee for the next grade. A job title or management assignment alone does not authorize a salary change; written compensation approval is still required.
+
+7. Annual salary review
+The normal annual salary review takes place in April. Managers submit recommendations to HR by March 15, and approved changes normally take effect on May 1. A review is not a guaranteed increase. HR and Finance assess performance evidence, the approved budget, and consistency across comparable roles.
+
+8. Compensation approval authority
+A base salary change within the employee's current grade band requires department head approval, HR validation, and Finance budget confirmation. A proposed salary outside the approved band additionally requires Managing Director approval before it can be offered. Managers must not promise a change before the full approval process is complete.
+
+9. Promotion-related salary changes
+Promotion decisions follow promotion_policy.txt. A promotion does not automatically set an employee's salary at the top of the new band or create a fixed percentage increase. HR prepares a separate compensation proposal, obtains the approvals in this policy, and communicates the new gross salary and effective date in writing.
+
+10. Variable bonuses
+A discretionary bonus requires an approved company bonus plan and an individual award notice. A strong performance rating alone does not guarantee a bonus. Finance processes an award only after receiving the required approvals and a confirmed payment month. This policy does not define a universal bonus percentage or sales commission rate.
+
+11. New starters and partial months
+For this fictional payroll, a partial month's base salary is calculated as the monthly gross base salary divided by scheduled working days in that month, multiplied by eligible paid working days. HR confirms the paid days used. For CNY 12,000 across twenty scheduled days, ten eligible days produce CNY 6,000 gross base salary.
+
+12. Overtime and leave inputs
+Approved overtime payments are processed according to overtime_policy.txt and the employee's written arrangement. Payroll must not convert compensatory time into cash without the required HR instruction. Leave dates come from approved HR records. This policy does not specify a universal deduction rate for sick leave or other leave categories.
+
+13. Payslips and deductions
+Employees receive a private payslip showing gross earnings, itemized deductions, and net payment. Payroll must identify the basis for each deduction and explain an unfamiliar item on request. The example salary bands are gross amounts; they must not be presented as a guaranteed take-home amount.
+
+14. Payroll errors
+Employees should report a suspected salary error to Payroll within five working days after receiving the payslip. Payroll acknowledges the case within two working days and targets a resolution within five working days after receiving complete supporting information. A confirmed underpayment requires a documented correction schedule communicated to the employee.
+
+15. Final salary and outstanding items
+When employment ends, HR confirms the final working date and Payroll prepares a final calculation under the employee's applicable terms. Outstanding expense claims and compensatory balances are reviewed separately. This sample document does not define a statutory final payment deadline; HR must confirm the applicable timing with the employee.
+
+16. Privacy and questions
+Individual payroll records are Restricted information under information_classification_policy.txt. Access is limited to the employee and authorized HR, Payroll, and Finance staff with a defined business need. Managers must use the approved HR process for budget questions. General salary band rules may be discussed internally without exposing another employee's private payslip.

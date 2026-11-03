@@ -3,8 +3,8 @@
 **Company policies, clear answers.**
 
 PolicyDesk is an internal policy assistant for small teams. Employees can ask about
-leave, travel, and approval procedures, see the retrieved policy sources, and continue
-the conversation with their previous session history.
+leave, travel, pay, benefits, career progression, reporting relationships, and information
+handling. Answers include retrieved policy sources, and CLI conversations retain session history.
 
 ## Features
 
@@ -13,6 +13,32 @@ the conversation with their previous session history.
 - Local HuggingFace embeddings and persistent MongoDB, Chroma, and Redis storage.
 - Named conversation sessions with saved history.
 - A local web demo with example questions, streamed answers, and policy excerpts.
+
+## Policy library
+
+The eight English policy documents in `data/` describe one fictional company. The
+amounts, approval rules, organization structure, and salary bands are sample business
+data rather than real personnel records.
+
+| File | Coverage |
+| --- | --- |
+| `leave_policy.txt` | Leave requests, approval thresholds, emergencies, and handovers |
+| `travel_policy.txt` | Travel approval, lodging limits, invoices, and reimbursement deadlines |
+| `overtime_policy.txt` | Working hours, cumulative approvals, time records, and compensatory time |
+| `salary_policy.txt` | Pay dates, L1-L5 salary bands, salary reviews, and payroll corrections |
+| `promotion_policy.txt` | Career levels, evidence, review windows, panels, and appeals |
+| `employee_benefits_policy.txt` | Learning budgets, wellbeing, health checks, and equipment claims |
+| `information_classification_policy.txt` | Public, Internal, Confidential, and Restricted handling rules |
+| `company_hierarchy_policy.txt` | Departments, reporting lines, management roles, and delegation |
+
+Example questions for the expanded library:
+
+- Who approves overtime if my weekly total increases from six to nine hours?
+- When is salary paid if the twenty-fifth falls on a weekend?
+- What evidence do I need for promotion to L3?
+- What is the annual learning budget, and when must I submit a benefit claim?
+- Does an L5 grade automatically allow access to Restricted information?
+- Does a project lead approve my leave, or does my direct manager approve it?
 
 ## Project status and roadmap
 

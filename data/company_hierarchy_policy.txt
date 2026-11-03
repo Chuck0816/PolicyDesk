@@ -1,0 +1,54 @@
+PolicyDesk Organization Structure and Reporting Policy
+Policy ID: ORG-HIER-001
+Version: 1.0
+Policy owner: Human Resources (HR)
+Scope: Reporting relationships and approval roles in the fictional PolicyDesk company.
+All departments, positions, and reporting rules below are illustrative sample company data.
+
+1. Company structure
+The company's executive leader is the Managing Director. Five department heads report to the Managing Director: the Head of Engineering, Head of Product and Operations, Head of Human Resources, Head of Finance, and Head of Security and IT. Team managers report to the relevant department head, and employees report to their assigned team manager.
+
+2. Reporting chain
+The standard escalation chain is employee, direct manager, department head, and Managing Director. An employee's direct manager is the person recorded in the HR organization directory, not simply the most senior person on the employee's project. HR maintains the authoritative directory and the effective dates of reporting changes.
+
+3. Engineering department
+Engineering owns software delivery, technical architecture, testing, and service maintenance. Engineering team managers allocate development work and review delivery risks. The Head of Engineering approves department-level technical priorities and escalates major delivery tradeoffs to the Managing Director. Security approval remains a separate requirement where the information classification policy requires it.
+
+4. Product and Operations department
+Product and Operations owns product requirements, customer service operations, business process coordination, and routine supplier coordination. Project leads may coordinate schedules across departments but do not automatically become the direct managers of participating employees. Each employee retains the reporting relationship recorded by HR unless a formal transfer is completed.
+
+5. Human Resources department
+Human Resources owns employment records, leave administration, employee benefits, performance review coordination, and the promotion process. The Head of Human Resources resolves HR process questions and approves matters assigned to HR by the relevant policy. HR advises on employment terms but does not replace Finance approval of a spending budget.
+
+6. Finance department
+Finance owns payroll processing, expense verification, payment scheduling, and department budget checks. The Head of Finance confirms funding and assigns an independent reviewer when an expense approver has a conflict. Finance may return an unsupported claim, but cannot independently grant a promotion or change an employee's reporting line.
+
+7. Security and IT department
+Security and IT owns account provisioning, device management, information protection, and incident coordination. The Head of Security and IT is the Security approver referenced in information_classification_policy.txt. The department can require a safer transfer method or decline an unsuitable system for sensitive information even when a business manager supports the underlying task.
+
+8. Direct manager responsibilities
+A direct manager assigns work, holds regular feedback discussions, coordinates absence coverage, and provides the first review of employee requests. The direct manager approves leave of up to three working days and ordinary domestic business travel applications. These responsibilities do not include waiving spending limits or granting unrestricted access to sensitive records.
+
+9. Department head responsibilities
+Department heads own department staffing, priorities, and budget proposals. They approve leave exceeding three working days and other escalated requests when the relevant policy assigns that authority. A department head must still obtain HR, Finance, or Security review when required. Seniority does not remove a policy's separate review steps.
+
+10. Managing Director responsibilities
+The Managing Director sets company priorities and approves matters explicitly escalated to the executive level. Examples include promotions to L4 or L5 and salary proposals outside an approved grade band. Routine questions should follow the normal reporting chain unless there is an urgent concern, a conflict of interest, or a protected reporting need.
+
+11. Career grades are separate
+L1 through L5 describe career level and responsibility, as defined in promotion_policy.txt. They do not by themselves identify the employee's direct manager, confer a management position, or grant information access. An L4 specialist may report to a formally appointed team manager. Management authority comes from a documented appointment, not from the grade label alone.
+
+12. Project and matrix reporting
+For a cross-department project, the project lead coordinates deliverables and meeting schedules. Each employee's direct manager remains responsible for leave approval, workload decisions, and performance input unless HR records another arrangement. When project priorities conflict with department work, the project lead and direct manager first try to resolve the conflict together.
+
+13. Delegation and unavailable approvers
+An unavailable approver may delegate only the authority they are allowed to exercise. The delegation must be written, identify the delegate, describe its scope, and state an expiry date. HR records delegations affecting employee approvals. A delegate must satisfy any same-level requirement in the applicable policy and cannot approve their own request.
+
+14. Conflicts and independent approval
+Employees must not approve their own leave, travel expenses, salary change, promotion, or information access. A team manager's routine request goes to their department head. A department head's routine request goes to the Managing Director, with the required functional reviews. HR and Finance coordinate an independent approver for the Managing Director's own expense claims.
+
+15. Transfers and acting assignments
+A permanent reporting change requires agreement from the receiving department head and HR, with the releasing department involved in the handover. HR communicates the new manager and effective date before updating the directory. An acting assignment must state its duration and approval scope; it does not automatically change grade, salary, or data access.
+
+16. Questions and escalation
+Employees should ask HR when the directory is missing or inconsistent with an instruction. Unresolved cross-department responsibility disputes go to the relevant department heads, then to the Managing Director. Information incidents go directly to Security, while payroll errors go to Payroll. A direct reporting route for an urgent issue does not replace the normal approval process for unrelated requests.

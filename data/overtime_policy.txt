@@ -1,0 +1,54 @@
+PolicyDesk Overtime and Compensatory Time Policy
+Policy ID: HR-OT-001
+Version: 1.0
+Policy owner: Human Resources (HR)
+Scope: Employees of the fictional PolicyDesk company working an ordinary office schedule.
+This document is sample internal policy data for the PolicyDesk application.
+
+1. Ordinary working schedule
+The standard office schedule is Monday through Friday, from 09:00 to 18:00, with an unpaid lunch break from 12:00 to 13:00. This represents eight working hours per day. A different schedule must be recorded by HR before the employee uses it as the basis for an overtime request.
+
+2. Definition of overtime
+Overtime is necessary business work performed outside the employee's recorded working schedule. Employees must record actual work rather than the total time spent online or in the office. Personal study, voluntary social events, ordinary commuting, and unpaid meal breaks are not overtime under this procedure.
+
+3. Advance request requirements
+Employees must submit planned overtime requests at least one working day before the work begins. The request must explain the business reason, planned task, date, start and end times, expected working hours, and affected project. The manager should first consider workload redistribution or a revised deadline.
+
+4. Weekly approval threshold
+The direct manager may approve up to eight overtime hours per employee in one Monday-to-Sunday week. A weekly total exceeding eight hours requires department head approval and HR review before the additional hours are worked. The threshold applies to the combined weekly total, not to each separate application.
+
+5. Example of cumulative approval
+An employee with six approved overtime hours in the current week needs two more hours approved by the direct manager to reach eight. A request for three more hours would bring the weekly total to nine and requires department head approval and HR review. Splitting the request does not avoid this requirement.
+
+6. Emergency work
+For an unexpected production incident or urgent customer disruption, employees must notify the direct manager as soon as practical. The formal application must be submitted by the end of the next working day after the emergency work. The normal weekly approval threshold still applies to the actual hours worked.
+
+7. Recording actual hours
+Employees must record overtime within two working days after completing it. Entries must show actual start and end times, unpaid breaks, the task completed, and the original approval reference. Time is recorded in fifteen-minute increments without rounding up. Four hours and ten minutes of work is recorded as four hours under this sample procedure.
+
+8. Manager verification
+The direct manager checks the completed work and actual duration before confirming a time entry. If actual hours exceed the approval, the manager must explain the difference and obtain the required additional approval. HR handles disputes about unapproved work; missing advance approval is not a reason to hide actual work from the record.
+
+9. Compensatory time arrangement
+For employees with a written compensatory time arrangement recorded by HR, each approved overtime hour creates one hour of compensatory time. Eight approved overtime hours create one working day of compensatory time. Employees must not assume that a cash payment is available merely because an overtime entry has been approved.
+
+10. Using compensatory time
+Employees should use credited compensatory time within ninety calendar days after HR confirms the credit. Requests follow the approval thresholds in leave_policy.txt: up to three working days require direct manager approval, while longer absences require department head approval. Employees must identify the compensatory time balance being used.
+
+11. Expiring or unavailable balances
+Employees should discuss unused credits with their manager at least ten calendar days before the ninety-day target expires. If business coverage prevents use, HR and the department head must record a resolution. Credits must not be silently deleted. The applicable written employment arrangement determines any required alternative treatment.
+
+12. Cash overtime arrangements
+Employees whose written employment arrangement provides cash overtime must submit verified hours to HR and Payroll. The applicable rate must be documented in that arrangement. This sample policy does not specify an hourly multiplier or a universal cash rate. The salary policy describes the normal payroll calendar and the correction process.
+
+13. No duplicate compensation
+The same overtime hours must not receive both a cash payment and compensatory time unless HR documents a separate required adjustment. Taking an approved business trip does not automatically make every travel hour overtime. Employees must identify actual work performed outside their schedule and follow this overtime approval process.
+
+14. Wellbeing and workload review
+Managers must review repeated overtime patterns rather than treating overtime as the normal way to meet deadlines. Employees may report fatigue or an unsafe workload to HR without waiting for a weekly review. Managers should adjust assignments, arrange coverage, or defer nonessential work when the workload cannot reasonably be completed.
+
+15. Monthly reconciliation and corrections
+HR reconciles approved hours, compensatory credits, and any payroll instructions by the tenth calendar day of the following month. Employees must report an incorrect entry within five working days after noticing it. HR keeps the original entry and correction reason so the change can be audited.
+
+16. Questions and exceptions
+HR owns questions about eligibility, overtime records, and compensation arrangements. Department heads may approve additional business hours but cannot change an employee's compensation terms on their own. Mandatory requirements and signed employment terms take precedence over this fictional procedure; HR resolves a conflict before final processing.

@@ -82,10 +82,9 @@ def main():
         [data-testid="stAppDeployButton"] {display: none;}
         .block-container {max-width: 1080px; padding-top: 3rem; padding-bottom: 2rem;}
         h1 {letter-spacing: -0.045em; font-weight: 750; line-height: 1.12;}
-        [data-testid="stSidebar"] {border-right: 1px solid #e0e5ed;}
-        [data-testid="stForm"] {background: white; border-radius: 16px; padding: 1.5rem;}
+        [data-testid="stForm"] {border-radius: 16px; padding: 1.5rem;}
         [data-testid="stVerticalBlockBorderWrapper"] {border-radius: 16px;}
-        .eyebrow {color: #315dcc; font-size: .78rem; letter-spacing: .14em;
+        .eyebrow {font-size: .78rem; letter-spacing: .14em;
                   font-weight: 700; margin-bottom: .8rem;}
         </style>
         """,
