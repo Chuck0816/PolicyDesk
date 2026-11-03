@@ -1,0 +1,54 @@
+PolicyDesk Business Travel and Expense Policy
+Policy ID: FIN-TRAVEL-001
+Version: 1.0
+Policy owner: Finance
+Scope: Domestic business travel by employees of the fictional PolicyDesk company.
+This document is sample internal policy data for the PolicyDesk application.
+
+1. Purpose and responsibilities
+The business travel policy defines how employees obtain travel approval, book reasonable transport and accommodation, and claim business expenses. Employees are responsible for accurate claims. Direct managers approve the business need and budget. Finance checks supporting documents and processes eligible reimbursements after the required approvals are complete.
+
+2. Travel approval before booking
+Employees must submit a travel application and obtain written approval from their direct manager before booking a business trip. Applications should be submitted at least five working days before departure. A travel request must describe the business purpose, destination, travel dates, expected meetings, and estimated total cost.
+
+3. Required travel application details
+The application must separate estimated transport, lodging, meals, and other business costs. Employees must identify the relevant team budget and explain any personal travel added to the itinerary. Approval applies only to the submitted itinerary and budget. A pending application does not authorize booking or reimbursement.
+
+4. Domestic accommodation limit
+The domestic business travel accommodation reimbursement limit is CNY 500 per room per night, including mandatory hotel taxes and service charges. Breakfast included in the room rate counts toward this limit. Personal minibar charges, entertainment, and room upgrades are excluded. For two eligible nights at CNY 480 per night, the lodging claim is CNY 960.
+
+5. Accommodation above the limit
+If a suitable hotel within the CNY 500 nightly limit is unavailable, employees must obtain written exception approval from the department head and Finance before booking. The request must include the proposed rate and the reason a lower-cost option is unsuitable. Without an approved exception, reimbursement is capped at CNY 500 per night and the employee pays the excess.
+
+6. Transport bookings
+Employees should choose economy-class flights or second-class train seats and use a reasonable route for the business itinerary. A higher travel class requires written department head approval before purchase. Local public transport and necessary taxis between the station, airport, hotel, and business meeting locations may be claimed with appropriate supporting records.
+
+7. Meals and personal expenses
+Reasonable meals during approved business travel may be reimbursed when itemized receipts show the amount and date. Meals already provided by the hotel, an event organizer, or a customer must not be claimed again. Alcohol, leisure activities, personal shopping, companion expenses, and commuting unrelated to the business trip are not reimbursable under this policy.
+
+8. Invoices and evidence
+Every reimbursement claim must include invoices for the expenses claimed. Employees must also attach payment evidence when the invoice does not establish that payment was made. Transport claims require the itinerary or ticket record, and hotel claims require the stay dates and number of nights. An invoice must not be used for more than one claim.
+
+9. Missing or incorrect invoices
+If an invoice is missing or contains incorrect information, employees must first request a replacement or correction from the supplier. Finance must review and approve any proposed alternative evidence before the expense can be reimbursed. A payment screenshot alone does not automatically satisfy the invoice requirement. Unsupported expenses remain pending or may be rejected.
+
+10. Reimbursement submission deadline
+Employees must submit a complete reimbursement claim within 15 calendar days after the trip ends. The day after the return date is day one. Weekends and holidays count, and the deadline does not automatically move to a working day. For a trip ending on June 1, the submission deadline is June 16.
+
+11. Late or incomplete claims
+Employees who cannot meet the deadline must notify Finance before it expires and request an extension with a reason and proposed submission date. Finance and the direct manager must approve the extension in writing. An incomplete submission is returned for correction and does not count as a complete claim. Late claims without an approved extension require individual review.
+
+12. Claim review and payment
+The direct manager confirms that the expenses relate to the approved business purpose. Finance checks invoice validity, policy limits, calculations, and duplicate submissions. Finance targets payment within ten working days after receiving a complete claim with all required approvals. The review clock pauses while requested corrections or supporting documents are outstanding.
+
+13. Itinerary changes and cancellations
+Employees must notify their direct manager before making material changes to an approved itinerary or budget. Additional costs require approval before purchase whenever possible. If a trip is cancelled, employees must promptly cancel refundable bookings and include refunds or credits in the expense record. The same expense cannot be reimbursed after it has been refunded.
+
+14. Personal travel combined with business travel
+Employees may add personal travel only with advance written agreement from their direct manager. The company reimburses only the documented business portion of the trip. Extra hotel nights, transport changes, meals, and activities attributable to the personal extension are paid by the employee. The claim must clearly separate business and personal costs.
+
+15. Exceptional situations and policy gaps
+For urgent travel that cannot follow the normal application timeline, employees must contact their direct manager before booking and record the urgent business reason. All standard expense limits still apply unless the relevant exception is approved. International travel, relocation, and travel advances are outside this policy; employees must consult Finance before making those commitments.
+
+16. Record accuracy and questions
+Employees must review all amounts before submission and tell Finance immediately if they discover an error or duplicate claim. Managers must not approve their own travel claims; Finance assigns an independent approver with appropriate authority. Questions about expense eligibility, invoices, or exception requests should be directed to Finance before the employee incurs the cost.

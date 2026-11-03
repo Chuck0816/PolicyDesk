@@ -1,0 +1,41 @@
+name: ${COMPOSE_PROJECT_NAME:-policydesk}
+
+services:
+  mongo:
+    image: mongo:7.0
+    ports:
+      - "127.0.0.1:27028:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6389:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  chroma:
+    image: chromadb/chroma:1.5.9
+    environment:
+      ANONYMIZED_TELEMETRY: "False"
+    ports:
+      - "127.0.0.1:8018:8000"
+    volumes:
+      - chroma_data:/data
+
+volumes:
+  mongo_data:
+  redis_data:
+  chroma_data:

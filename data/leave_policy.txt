@@ -1,0 +1,54 @@
+PolicyDesk Employee Leave Policy
+Policy ID: HR-LEAVE-001
+Version: 1.0
+Policy owner: Human Resources (HR)
+Scope: All employees of the fictional PolicyDesk company.
+This document is sample internal policy data for the PolicyDesk application.
+
+1. Purpose and responsibilities
+The employee leave policy defines how employees request time away from work, obtain approval, and prepare a handover. Employees must provide accurate information and keep their managers informed. Managers arrange coverage and communicate decisions. HR maintains leave records and explains policy questions that are not answered in this document.
+
+2. Definition of a leave day
+Leave duration is measured in scheduled working days. Weekends, company holidays, and other days when an employee is not scheduled to work do not count toward the requested duration. A half-day request counts as 0.5 working days. Consecutive working days in the same absence are treated as one request when determining the approval level.
+
+3. Planned leave requests
+Employees must submit planned leave requests before the absence begins. A request for up to three working days should be submitted at least two working days in advance. A request for more than three working days should be submitted at least five working days in advance. Submitting a request does not mean it has been approved.
+
+4. Required application details
+Each leave request must include the employee's name, team, leave category, start date, end date, total working days, and proposed backup contact. Employees must describe any deadlines affected by the absence and link to their handover notes. Sensitive medical details must not be placed in shared handover documents.
+
+5. Approval for short leave
+The direct manager approves leave requests of three working days or fewer, including half-day requests. For example, a three-working-day request requires direct manager approval. The employee must receive a written approval message or an approved application status before treating planned leave as confirmed.
+
+6. Approval for extended leave
+The department head approves leave requests exceeding three working days. The direct manager first reviews the coverage plan and forwards the request with a recommendation. For example, a four-working-day request requires the department head's final approval. A manager's recommendation alone is not final approval for extended leave.
+
+7. Review timing and unavailable approvers
+Approvers should respond within two working days after receiving a complete application. If the required approver is unavailable, HR identifies an authorized delegate at the same approval level. Employees may ask HR to follow up on a delayed decision. An unanswered request is still pending and must not be treated as approved.
+
+8. Unexpected illness or emergencies
+When advance submission is impossible because of illness or an emergency, employees must notify their direct manager as soon as reasonably possible. Employees should submit the formal application within two working days after they are able to do so. Emergency notification does not remove the normal approval requirements based on total leave duration.
+
+9. Supporting information for sick leave
+For sick leave exceeding three consecutive working days, HR may request a medical certificate or other reasonable confirmation of the absence. Employees submit supporting documents directly to HR, rather than sharing them with the whole team. HR explains acceptable alternatives when a document cannot reasonably be obtained.
+
+10. Work handover
+Before planned leave begins, employees must list open tasks, current status, relevant deadlines, and a backup contact. The direct manager confirms who will handle urgent matters. Backup colleagues should receive the access they need through the normal access process. Employees must never share personal passwords as part of a handover.
+
+11. Changes and extensions
+Employees must request approval before changing approved leave dates or extending an absence. The approval level is recalculated using the total duration of the revised absence. Extending a two-working-day absence to four working days requires department head approval. Employees must notify their backup contact after a change is approved.
+
+12. Cancellation and early return
+Employees who no longer need approved leave must notify their direct manager and HR before the original start date whenever possible. Employees returning early must report their actual return date so HR can correct the record. Cancelled or unused days must not remain recorded as leave taken.
+
+13. Coverage conflicts and rejection
+Managers review staffing levels, customer commitments, and critical deadlines when considering planned leave. If coverage is insufficient, the approver must explain the reason and discuss alternative dates with the employee. Employees may ask HR to review a process concern, but HR review does not automatically approve the original dates.
+
+14. Exceptions and related policies
+Requests to waive the advance notice period require written agreement from the normal approver and HR. This exception does not change the approval threshold for the leave duration. This document does not define annual leave allowances, pay treatment, or carryover rules. Employees must ask HR about those topics instead of assuming an entitlement.
+
+15. Records and privacy
+HR records approved dates, actual leave taken, approval evidence, and any subsequent changes. Leave records are accessible only to authorized staff with a business need. Team calendars may show that an employee is unavailable, but must not include medical certificates or detailed personal reasons for the absence.
+
+16. Return and follow-up
+On returning to work, employees review outstanding tasks with their backup contact and tell their manager about unresolved issues. Employees must report an incorrect leave record to HR within five working days after returning. HR coordinates corrections with the approver and confirms the updated record to the employee.
