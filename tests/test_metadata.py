@@ -40,7 +40,16 @@ def test_policy_headers_and_metadata_survive_splitting(policy_nodes):
     assert salary.metadata["owner"] == "Human Resources (HR) and Finance"
 
 
-@pytest.mark.parametrize("header", ["", "Policy title\nPolicy ID: X\n", "Title\nVersion: 1.0\n"])
+@pytest.mark.parametrize(
+    "header",
+    [
+        "",
+        "Policy title\nPolicy ID: X\n",
+        "Title\nVersion: 1.0\n",
+        "Title\nPolicy ID: HR-001\nVersion: 1.0\n",
+        "Title\nPolicy ID: HR-001\nVersion: 1.0\nPolicy owner:   \n",
+    ],
+)
 def test_missing_business_header_is_rejected(header):
     with pytest.raises(ValueError):
         parse_policy_header(header)

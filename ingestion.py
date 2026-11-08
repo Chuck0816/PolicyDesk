@@ -1,5 +1,4 @@
-"""Load company policies and attach business metadata.
-Pre_Retrieval Processing"""
+"""Load registered policies and attach validated business metadata before splitting."""
 
 from pathlib import Path
 
@@ -34,21 +33,20 @@ def parse_policy_header(text):
         if separator:
             fields[key.strip()] = value.strip()
 
-    if not fields.get("Policy ID") or not fields.get("Version"):
-        raise ValueError("Each policy must declare Policy ID and Version.")
+    owner = fields.get("Policy owner") or fields.get("Policy owners")
+    if not fields.get("Policy ID") or not fields.get("Version") or not owner:
+        raise ValueError("Each policy must declare Policy ID, Version, and Policy owner.")
 
     return {
         "policy_title": lines[0].strip(),
         "policy_id": fields["Policy ID"],
         "version": fields["Version"],
-        "owner": fields.get(
-            "Policy owner",
-            fields.get("Policy owners", ""),
-        ),
+        "owner": owner,
     }
 
 
 def load_documents():
+    """Load policies plus general guidance available only in all-policies searches."""
     documents = SimpleDirectoryReader(
         input_dir=str(DATA_DIR),
         required_exts=[".txt"],
@@ -59,24 +57,20 @@ def load_documents():
         file_name = document.metadata["file_name"]
 
         if file_name not in POLICY_CATEGORIES:
-            raise ValueError(
-                f"Add a category for {file_name} in POLICY_CATEGORIES."
-            )
+            raise ValueError(f"Register {file_name!r} in POLICY_CATEGORIES before indexing.")
 
-        # Follow the course pattern: enrich each Document before splitting.
-        document.metadata.update({
-            "doc_type": "company_policy",
-            "language": "en",
-            "category": POLICY_CATEGORIES[file_name],
-            **parse_policy_header(document.text),
-        })
+        document.metadata.update(
+            {
+                "doc_type": "company_policy",
+                "language": "en",
+                "category": POLICY_CATEGORIES[file_name],
+                **parse_policy_header(document.text),
+            }
+        )
 
     documents.append(
         Document(
-            text=(
-                "Contact HR when the available company policies "
-                "do not cover your situation."
-            ),
+            text="Contact HR when the available company policies do not cover your situation.",
             metadata={
                 "file_name": "manual_faq",
                 "doc_type": "general_guidance",
