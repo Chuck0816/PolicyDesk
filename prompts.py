@@ -22,6 +22,15 @@ RICH_PROMPT = RichPromptTemplate(
     "Question: {{ query_str }}"
 )
 
+QUERY_REWRITE_PROMPT = PromptTemplate(
+    "Rewrite the question as one English search query for company policies.\n"
+    "Preserve intent, negation, comparisons, dates, amounts, units, grades, and policy IDs.\n"
+    "Copy existing digit sequences exactly; do not add new digit sequences.\n"
+    "Do not add policy facts, assume eligibility, or answer the question.\n"
+    "Return only the search query on one line.\n"
+    "Question: {query}\nSearch query:"
+)
+
 
 if __name__ == "__main__":
     for prompt in (QA_PROMPT, CHAT_PROMPT, RICH_PROMPT):

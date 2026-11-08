@@ -8,8 +8,8 @@ from llama_index.core.schema import MetadataMode
 
 import services
 import storage
-from base_llm import create_models
-from ingestion import DATA_DIR
+from base_llm import create_models, create_reranker
+from ingestion import DATA_DIR, POLICY_CATEGORIES
 
 EXAMPLES = {
     "Leave approvals": "Who approves four working days of leave?",
@@ -20,14 +20,31 @@ EXAMPLES = {
 
 @st.cache_resource(show_spinner=False)
 def load_index_and_models(knowledge_base):
-    """Load shared read-only resources on the first question, keyed by namespace."""
+    """Share the saved index and model resources across category-specific engines."""
     context, _ = storage.connect_storage(services)
+
     if not context.index_store.get_index_struct(storage.INDEX_ID):
         raise ValueError(f"Build the {knowledge_base} knowledge base before asking questions.")
+
     llm, embed_model = create_models()
     services.configure_settings(llm, embed_model)
-    index = load_index_from_storage(context, index_id=storage.INDEX_ID)
-    return index, llm
+
+    index = load_index_from_storage(
+        context,
+        index_id=storage.INDEX_ID,
+    )
+    reranker = create_reranker()
+
+    return index, llm, reranker
+
+
+@st.cache_resource(show_spinner=False)
+def load_query_engine(knowledge_base, category=None):
+    """Cache each scope while reusing one set of model weights."""
+    index, llm, reranker = load_index_and_models(knowledge_base)
+    return services.build_query_engine(
+        index, llm, advanced=True, reranker=reranker, category=category
+    )
 
 
 def source_details(response):
@@ -35,6 +52,9 @@ def source_details(response):
     return [
         {
             "name": node.metadata.get("file_name", "Unknown source"),
+            "policy_id": node.metadata.get("policy_id", "Unknown policy"),
+            "version": node.metadata.get("version", "Unknown version"),
+            "category": node.metadata.get("category", "Unspecified"),
             "score": node.score,
             "text": node.get_content(metadata_mode=MetadataMode.NONE),
         }
@@ -45,14 +65,25 @@ def source_details(response):
 def render_sources(sources):
     st.divider()
     st.markdown("**Retrieved policy excerpts**")
-    st.caption("Similarity indicates retrieval relevance, not answer confidence.")
+    st.caption("Reranker scores indicate relative relevance, not answer confidence.")
+
     if not sources:
         st.info("No source excerpts were returned.")
+
     for number, source in enumerate(sources, start=1):
         with st.expander(f"{number:02d}  /  {source['name']}"):
+            st.caption(
+                f"{source['policy_id']} · Version {source['version']} · "
+                f"{source['category'].replace('_', ' ').title()}"
+            )
             if source["score"] is not None:
-                st.caption(f"Similarity: {source['score']:.4f}")
+                st.caption(f"Reranker score: {source['score']:.4f}")
             st.text(source["text"])
+
+
+def clear_result():
+    """Discard evidence from a previous search scope."""
+    st.session_state.pop("result", None)
 
 
 def render_sidebar():
@@ -60,6 +91,16 @@ def render_sidebar():
         st.markdown("## PolicyDesk")
         st.caption("YOUR COMPANY POLICY ASSISTANT")
         st.divider()
+        category = st.selectbox(
+            "Search scope",
+            options=[None, *sorted(set(POLICY_CATEGORIES.values()))],
+            format_func=lambda value: (
+                "All policies" if value is None else value.replace("_", " ").title()
+            ),
+            key="policy_scope",
+            on_change=clear_result,
+        )
+        st.caption("Both semantic and keyword search stay within this scope.")
         st.markdown("**Policy library**")
         st.caption("Local source files; indexed content may differ until rebuilt.")
         for path in sorted(DATA_DIR.glob("*.txt")):
@@ -71,7 +112,8 @@ def render_sidebar():
         st.caption("02 / Read an answer based on relevant policy excerpts.")
         st.caption("03 / Open the sources to check the original wording.")
         st.divider()
-        st.caption("Basic RAG demo · Local access")
+        st.caption("Policy search · Local access")
+    return category
 
 
 def main():
@@ -90,12 +132,12 @@ def main():
         """,
         unsafe_allow_html=True,
     )
-    render_sidebar()
+    category = render_sidebar()
     st.markdown(
         '<div class="eyebrow">EMPLOYEE SUPPORT / POLICY SEARCH</div>', unsafe_allow_html=True
     )
     st.title("Company policies. Clear answers.")
-    st.markdown("Ask about leave, travel, or approvals. Get an answer grounded in your policies.")
+    st.markdown("Ask about company policies. Get an answer grounded in the selected scope.")
     st.caption("Each question is independent and uses the indexed company policies.")
     st.write("")
     st.markdown("**Try a question**")
@@ -124,15 +166,21 @@ def main():
                 with answer_area.container(border=True):
                     st.caption("ANSWER")
                     with st.spinner("Looking up the policy and preparing your answer..."):
-                        index, llm = load_index_and_models(storage.KB_NAME)
-                        engine = services.build_query_engine(index, llm)
+                        engine = load_query_engine(storage.KB_NAME, category)
                         response = engine.query(question)
                     answer = st.write_stream(response.response_gen)
                     sources = source_details(response)
                     render_sources(sources)
                     st.session_state["result"] = {
-                        "question": question, "answer": answer, "sources": sources
+                        "question": question,
+                        "answer": answer,
+                        "sources": sources,
+                        "category": category,
                     }
+            except ValueError as error:
+                answer_area.empty()
+                logging.getLogger(__name__).exception("Policy configuration or scope failed")
+                st.error(f"Could not complete the question. {error}")
             except Exception:
                 answer_area.empty()
                 logging.getLogger(__name__).exception("Policy query failed")

@@ -1,13 +1,16 @@
 """Unit and database integration tests for indexing, retrieval, and conversation state."""
 
 import os
+from unittest.mock import Mock
 from uuid import uuid4
 
 import pytest
 from llama_index.core import Document, Settings, VectorStoreIndex, load_index_from_storage
+from llama_index.core.base.response.schema import Response, StreamingResponse
 from llama_index.core.chat_engine import CondenseQuestionChatEngine
 from llama_index.core.embeddings import MockEmbedding
 from llama_index.core.llms import ChatMessage, MockLLM
+from llama_index.core.postprocessor import SimilarityPostprocessor
 from llama_index.core.schema import NodeRelationship, TextNode
 from llama_index.core.storage.chat_store import SimpleChatStore
 from llama_index.core.storage.docstore import SimpleDocumentStore
@@ -110,6 +113,18 @@ def test_database_build_reload_and_chat_restore(monkeypatch):
     engine = services.build_query_engine(index, Settings.llm)
     response = engine.query("Who approves leave?")
     assert "".join(response.response_gen) and response.source_nodes
+    scoped_engine = services.build_query_engine(
+        index,
+        Settings.llm,
+        advanced=True,
+        reranker=SimilarityPostprocessor(similarity_cutoff=-1),
+        category="salary",
+    )
+    scoped = scoped_engine.query("Who approves leave and when is payroll paid?")
+    assert "".join(scoped.response_gen)
+    assert scoped.source_nodes
+    assert {node.metadata["category"] for node in scoped.source_nodes} == {"salary"}
+    assert {node.metadata["policy_id"] for node in scoped.source_nodes} == {"HR-PAY-001"}
     key = f"{storage.KB_NAME}:chat:review"
     memory = services.build_chat_memory(storage.connect_chat_store(), key)
     chat = CondenseQuestionChatEngine.from_defaults(
@@ -119,3 +134,41 @@ def test_database_build_reload_and_chat_restore(monkeypatch):
     restored = services.build_chat_memory(storage.connect_chat_store(), key)
     assert len(restored.get()) == 2
     assert services.build_chat_memory(storage.connect_chat_store(), key + ":other").get() == []
+
+
+@pytest.mark.parametrize("chunks", [[], [""], [" ", "\n"]])
+def test_empty_stream_is_reported_instead_of_displayed_as_success(chunks):
+    with pytest.raises(ValueError, match="account quota"):
+        list(services.validated_answer_stream(iter(chunks)))
+
+
+def test_validated_stream_preserves_incremental_text():
+    chunks = ["", "Payroll ", "is paid monthly."]
+    assert list(services.validated_answer_stream(iter(chunks))) == chunks
+
+
+def test_empty_provider_answer_does_not_enter_chat_history(monkeypatch):
+    index = VectorStoreIndex([TextNode(text="Managers approve leave.")])
+    engine = services.build_query_engine(index, Settings.llm)
+    monkeypatch.setattr(engine._response_synthesizer, "synthesize", Mock(return_value=Response("")))
+    store = SimpleChatStore()
+    memory = services.build_chat_memory(store, "empty-answer")
+    chat = CondenseQuestionChatEngine.from_defaults(
+        query_engine=engine, llm=Settings.llm, memory=memory
+    )
+    with pytest.raises(ValueError, match="account quota"):
+        chat.chat("Who approves leave?")
+    assert store.get_messages("empty-answer") in (None, [])
+
+
+def test_query_engine_wraps_provider_stream_errors(monkeypatch):
+    index = VectorStoreIndex([TextNode(text="Managers approve leave.")])
+    engine = services.build_query_engine(index, Settings.llm)
+    monkeypatch.setattr(
+        engine._response_synthesizer,
+        "synthesize",
+        Mock(return_value=StreamingResponse(response_gen=iter([""]))),
+    )
+    response = engine.query("Who approves leave?")
+    with pytest.raises(ValueError, match="account quota"):
+        list(response.response_gen)
