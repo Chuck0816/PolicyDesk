@@ -9,8 +9,8 @@ from llama_index.core.schema import MetadataMode
 
 import services as functions
 import storage
-from base_llm import create_models, create_reranker
-from ingestion import POLICY_CATEGORIES, load_documents
+from base_llm import create_models
+from ingestion import load_documents
 
 
 def preview(functions):
@@ -19,7 +19,6 @@ def preview(functions):
     print(f"Documents: {len(documents)} | Nodes: {len(nodes)}")
     for node in nodes:
         print(f"\nSource: {node.metadata['file_name']} | Source Document: {node.ref_doc_id}")
-        print(f"Metadata: {node.metadata}")
         print(node.get_content(MetadataMode.NONE))
 
 
@@ -40,16 +39,10 @@ def show_sources(response):
     print("\nRetrieved sources:")
     for item in response.source_nodes:
         score = f"{item.score:.4f}" if item.score is not None else "n/a"
-        name = item.metadata.get("file_name", "unknown")
-        policy_id = item.metadata.get("policy_id", "unknown")
-        category = item.metadata.get("category", "unknown")
-        print(f"- {name} | {policy_id} | {category} | reranker_score={score}")
+        print(f"- {item.metadata.get('file_name', 'unknown')} | similarity={score}")
 
 
 def run(args):
-    category = args.category
-    if category is not None and args.command in {"preview", "build"}:
-        raise ValueError("--category applies only to ask and chat; build indexes all policies.")
     if args.command == "preview":
         preview(functions)
         return
@@ -66,25 +59,15 @@ def run(args):
         build_index(context, collection, functions)
         return
     index = load_index_from_storage(context, index_id=storage.INDEX_ID)
-    reranker = create_reranker()
-
-    query_engine = functions.build_query_engine(
-        index,
-        llm,
-        advanced=True,
-        reranker=reranker,
-        category=category,
-    )
+    query_engine = functions.build_query_engine(index, llm)
     if args.command == "ask":
         response = query_engine.query(args.question)
         response.print_response_stream()
         show_sources(response)
         return
-    session_key = f"{storage.KB_NAME}:chat:{args.session}"
-    if category is not None:
-        # Scoped histories must not inject earlier answers from another policy category.
-        session_key += f":category:{category}"
-    memory = functions.build_chat_memory(storage.connect_chat_store(), session_key)
+    memory = functions.build_chat_memory(
+        storage.connect_chat_store(), f"{storage.KB_NAME}:chat:{args.session}"
+    )
     chat_engine = CondenseQuestionChatEngine.from_defaults(
         query_engine=query_engine, llm=llm, memory=memory
     )
@@ -109,11 +92,6 @@ if __name__ == "__main__":
     )
     parser.add_argument("command", choices=["preview", "build", "ask", "chat"])
     parser.add_argument("question", nargs="?")
-    parser.add_argument(
-        "--category",
-        choices=sorted(set(POLICY_CATEGORIES.values())),
-        help="Limit ask/chat to one policy category; omit to search all policies.",
-    )
     parser.add_argument("--session", default="review", help="Persistent chat session name.")
     try:
         run(parser.parse_args())

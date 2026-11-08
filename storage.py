@@ -27,10 +27,8 @@ def connect_storage(functions, create=False):
     index_store = RedisIndexStore.from_host_and_port(host="127.0.0.1", port=6389, namespace=KB_NAME)
 
     client = chromadb.HttpClient(host="127.0.0.1", port=8018)
-    # Query paths must not silently create an empty knowledge base.
-    collection = (
-        client.get_or_create_collection(KB_NAME) if create else client.get_collection(KB_NAME)
-    )
+    # Connect to the collection assigned to this knowledge base.
+    collection = client.get_or_create_collection(KB_NAME)
     vector_store = ChromaVectorStore(chroma_collection=collection)
 
     return functions.build_storage_context(docstore, index_store, vector_store), collection
