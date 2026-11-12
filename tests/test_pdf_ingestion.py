@@ -195,3 +195,18 @@ def test_lists_code_and_equations_keep_their_text(tmp_path):
     [(kind, text, page)] = pdf_ingestion.content_to_blocks(path, describe)
     assert (kind, page) == ("text", 1)
     assert text == "1 超标部分自理。\n2 Lost invoices need approval.\n\nlimit = 500\n\n$$a+b$$"
+
+
+def test_progress_reports_each_step_in_order(mineru_output, knowledge_base, tmp_path):
+    context, collection = knowledge_base
+    steps = []
+    pdf_ingestion.ingest_pdf(
+        write_pdf(tmp_path, "policy.pdf", b"%PDF progress"),
+        context,
+        collection,
+        work_dir=tmp_path / "work",
+        parse=lambda *_: mineru_output,
+        describe=describe,
+        progress=steps.append,
+    )
+    assert steps == ["parse", "describe", "index"]

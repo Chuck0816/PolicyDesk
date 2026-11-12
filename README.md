@@ -46,10 +46,15 @@ Question (Chinese or English)
 - **Answers and sessions:** Qwen Plus streams answers in the question's language.
   CLI chat uses question condensation and a Redis-backed 3,000-token memory window per
   knowledge base and session. Empty model output raises an actionable error.
-- **Web demo:** sidebar upload, a document list with confirmed deletion, independent
-  questions, streamed answers, and expandable excerpts with file, page, and type.
-  Models load once per process; the search engine is rebuilt automatically after a
-  PDF is added or deleted.
+- **Web demo:** two views, Ask and Documents, with a Chinese/English interface switch
+  (answers always follow the question's language) and Streamlit's light or dark theme.
+  Ask shows search, ranking, and writing phases, source cards with file, page, and
+  type before the streamed answer, expandable excerpts, and example questions.
+  Documents has an upload area with step-by-step progress, notices for skipped
+  figures, a filter for documents with skipped figures, and a table with status,
+  chunk count, time added, and confirmed deletion. Models load once per process; the
+  search engine is rebuilt automatically after a PDF is added or deleted. The design
+  is `design/mockups/d_answer_engine_with_table.html`.
 
 | Module | Responsibility |
 | --- | --- |
@@ -61,6 +66,7 @@ Question (Chinese or English)
 | `storage.py` | MongoDB, Redis, and Chroma connections |
 | `main.py` | CLI: add, delete, list, ask, and persistent chat |
 | `app.py` | Streamlit interface and resource caching |
+| `ui_text.py` | Chinese and English interface text |
 | `prompts.py` | Answer and rewrite prompts, plus reusable template variants |
 | `ingestion.py`, `data/` | Sample text policies used only by the offline tests |
 
@@ -163,9 +169,9 @@ python main.py chat --session employee-travel
 python main.py delete pdf-0123456789abcdef
 ```
 
-- In [the local demo](http://127.0.0.1:8501), add a PDF in the sidebar, wait for
-  parsing to finish, then ask questions. Delete asks for confirmation. Skipped figures
-  are listed after the upload and counted in the document list.
+- In [the local demo](http://127.0.0.1:8501), open **Documents**, add a PDF, wait
+  for the steps to finish, then switch to **Ask**. Delete asks for confirmation.
+  Skipped figures are listed after the upload and counted in the document table.
 - `list` shows each document ID, file name, chunk count, upload time, and skipped
   figures. Use the ID with `delete`. Deleted PDFs can be added again.
 - Adding the same file twice is rejected before any parsing or model calls.

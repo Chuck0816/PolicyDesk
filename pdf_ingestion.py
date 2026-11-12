@@ -186,14 +186,27 @@ def item_text(item):
 
 
 def ingest_pdf(
-    pdf_path, context, collection, *, work_dir, parse=run_mineru, describe=describe_image
+    pdf_path,
+    context,
+    collection,
+    *,
+    work_dir,
+    parse=run_mineru,
+    describe=describe_image,
+    progress=None,
 ):
     """Step 4: dedupe, build documents, reuse the existing splitter, append to the index.
 
     Returns (doc_id, node count, skipped figures). Each skipped figure is a dict with
     page, caption, and reason. Nothing is written when an exception is raised before
-    the index update.
+    the index update. `progress`, if given, is called with "parse", "describe", and
+    "index" as each step starts; it only reports and never changes the result.
     """
+
+    def report(step):
+        if progress is not None:
+            progress(step)
+
     pdf = Path(pdf_path).resolve()
     if pdf.suffix.lower() != ".pdf":
         raise ValueError(f"Only PDF files are supported: {pdf.name}")
@@ -203,12 +216,16 @@ def ingest_pdf(
         raise ValueError(f"{pdf.name} is already in the knowledge base ({doc_id}).")
 
     skipped = []
-    blocks = content_to_blocks(parse(pdf, Path(work_dir)), describe, skipped)
+    report("parse")
+    content_list = parse(pdf, Path(work_dir))
+    report("describe")
+    blocks = content_to_blocks(content_list, describe, skipped)
     if not blocks:
         raise ValueError(
             f"No text, tables, or figures could be extracted from {pdf.name} "
             f"({len(skipped)} figure(s) failed). Nothing was added."
         )
+    report("index")
     uploaded_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     documents = [
         Document(
