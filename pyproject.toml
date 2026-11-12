@@ -5,6 +5,12 @@ pythonpath = ["."]
 [tool.ruff]
 target-version = "py311"
 line-length = 100
+# Local-only conversation logs are never committed.
+extend-exclude = ["Claude Log"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# Keep the author's long explanatory comments intact.
+"pdf_ingestion.py" = ["E501"]

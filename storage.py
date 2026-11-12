@@ -11,18 +11,20 @@ from llama_index.storage.index_store.redis import RedisIndexStore
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
 load_dotenv(Path(__file__).resolve().parent / ".env")
-KB_NAME = os.getenv("KB_NAME", "policydesk_v1")
+KB_NAME = os.getenv("KB_NAME", "policydesk_uploads_v1")
 MONGO_DB = os.getenv("MONGO_DB", "policydesk")
 INDEX_ID = "policy_index"
 REDIS_URL = "redis://127.0.0.1:6389/0"
+MONGO_URI = "mongodb://127.0.0.1:27028/?serverSelectionTimeoutMS=5000"
+
+
+def connect_docstore():
+    """Open only the node store; listing documents needs neither Redis nor Chroma."""
+    return MongoDocumentStore.from_uri(uri=MONGO_URI, db_name=MONGO_DB, namespace=KB_NAME)
 
 
 def connect_storage(functions, create=False):
-    docstore = MongoDocumentStore.from_uri(
-        uri="mongodb://127.0.0.1:27028/?serverSelectionTimeoutMS=5000",
-        db_name=MONGO_DB,
-        namespace=KB_NAME,
-    )
+    docstore = connect_docstore()
 
     index_store = RedisIndexStore.from_host_and_port(host="127.0.0.1", port=6389, namespace=KB_NAME)
 

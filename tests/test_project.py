@@ -20,8 +20,18 @@ from llama_index.core.vector_stores import SimpleVectorStore
 import services
 import storage
 from ingestion import DATA_DIR, load_documents
-from main import build_index
 from prompts import CHAT_PROMPT, QA_PROMPT, RICH_PROMPT
+
+
+def build_sample_index(context):
+    """Index the sample policies, which are used only by tests of the retrieval chain."""
+    index = VectorStoreIndex(
+        services.split_documents(load_documents()),
+        storage_context=context,
+        store_nodes_override=True,
+    )
+    index.set_index_id(storage.INDEX_ID)
+    return index
 
 
 @pytest.fixture
@@ -104,10 +114,8 @@ def test_three_prompt_styles_render_the_same_inputs():
 )
 def test_database_build_reload_and_chat_restore(monkeypatch):
     monkeypatch.setattr(storage, "KB_NAME", f"policydesk_test_{uuid4().hex[:10]}")
-    context, collection = storage.connect_storage(services, create=True)
-    build_index(context, collection, services)
-    with pytest.raises(ValueError, match="already"):
-        build_index(context, collection, services)
+    context, _ = storage.connect_storage(services, create=True)
+    build_sample_index(context)
     reconnected, _ = storage.connect_storage(services)
     index = load_index_from_storage(reconnected, index_id=storage.INDEX_ID)
     engine = services.build_query_engine(index, Settings.llm)

@@ -13,6 +13,8 @@ from prompts import QUERY_REWRITE_PROMPT
 
 LOGGER = logging.getLogger(__name__)
 NUMBER_PATTERN = re.compile(r"\d+(?:[.,]\d+)*")
+# Each Chinese character is one keyword; other letters and digits keep whole-word tokens.
+BM25_TOKEN_PATTERN = r"(?u)[一-鿿]|[^\W一-鿿]+"
 CANDIDATE_TOP_K = 8
 FUSION_TOP_K = 10
 
@@ -112,7 +114,7 @@ def build_bm25_retriever(nodes, top_k: int):
     return BM25Retriever.from_defaults(
         nodes=nodes,
         similarity_top_k=min(top_k, len(nodes)),
-        token_pattern=r"(?u)\b\w+\b",
+        token_pattern=BM25_TOKEN_PATTERN,
         language="en",
     )
 

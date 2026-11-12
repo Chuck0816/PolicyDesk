@@ -1,12 +1,13 @@
 """PDF ingestion: MinerU blocks + Qwen-VL figure text, appended to the saved index."""
 
-import argparse
 import hashlib
 import json
+import logging
 import os
 import shlex
 import subprocess
-import tempfile
+import threading
+from datetime import datetime, timezone
 from pathlib import Path
 
 from llama_index.core import Document, VectorStoreIndex, load_index_from_storage
@@ -15,9 +16,13 @@ from llama_index.core.schema import NodeRelationship, ObjectType, RelatedNodeInf
 import services
 import storage
 
+LOGGER = logging.getLogger(__name__)
 MINERU_COMMAND = os.getenv("MINERU_COMMAND", "mineru")
 # 给 PDF 里的图片生成文字描述时用哪个视觉语言模型（VLM）。默认是 DashScope 的 qwen3-vl-plus
 VL_MODEL = os.getenv("VL_MODEL", "qwen3-vl-plus")
+UPLOAD_DOC_TYPE = "uploaded_document"
+# Redis keeps the whole index structure as one value, so writes must not overlap.
+WRITE_LOCK = threading.Lock()
 
 SKIPPED = {"header", "footer", "page_number"}
 FIGURE_PROMPT = (
@@ -27,15 +32,18 @@ FIGURE_PROMPT = (
 )
 
 """run_mineru 会拼出一条 MinerU 命令，用子进程运行它来解析 PDF, 然后在输出目录里找到唯一的 content_list.json, 返回它的路径"""
+
+
 def run_mineru(pdf, output_dir):
-    '''
+    """
     subprocess.run(列表, check=True) -> run a subprocess using the command
     *shlex.split(MINERU_COMMAND), "-p", str(pdf), "-o", str(output_dir)
     shlex.split(str) -> 按照空格拆分str
     pdf -> Path对象
     输出["mineru", "-p", "/docs/差旅政策.pdf", "-o", "/tmp/abc"]命令行参数
-    '''
-    subprocess.run([*shlex.split(MINERU_COMMAND), "-p", str(pdf), "-o", str(output_dir)], check=True)
+    """
+    command = [*shlex.split(MINERU_COMMAND), "-p", str(pdf), "-o", str(output_dir)]
+    subprocess.run(command, check=True)
     # 查找json文件 .rglob(模式)->递归模式
     # pdf.stem
     # 文件名去掉扩展名的部分：
@@ -45,18 +53,27 @@ def run_mineru(pdf, output_dir):
         raise ValueError(f"Expected one MinerU content list, found {len(matches)}.")
     return matches[0]
 
+
 """这个函数把一张图片和它的图注发给 Qwen-VL,
 让模型把图片内容写成一段可以被检索的文字，然后返回这段文字"""
+
+
 def describe_image(image_path, caption):
     from dashscope import MultiModalConversation
 
     response = MultiModalConversation.call(
         model=VL_MODEL,
         api_key=os.getenv("DASHSCOPE_API_KEY"),
-        messages=[{"role": "user", "content": [
-            {"image": Path(image_path).resolve().as_uri()}, # 转化成绝对路径后写成url格式
-            {"text": FIGURE_PROMPT.format(caption=caption or "-")},# caption是图注，比如 图1 差旅报销审批流程 <-（图注）
-        ]}],
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {"image": Path(image_path).resolve().as_uri()},  # 转化成绝对路径后写成url格式
+                    # caption是图注，比如 图1 差旅报销审批流程 <-（图注）
+                    {"text": FIGURE_PROMPT.format(caption=caption or "-")},
+                ],
+            }
+        ],
     )
     if response.status_code != 200:
         raise RuntimeError(f"{VL_MODEL} failed: {response.code} {response.message}")
@@ -64,10 +81,7 @@ def describe_image(image_path, caption):
     return "".join(part.get("text", "") for part in parts).strip()
 
 
-
-
-
-'''
+"""
 content_to_blocks: 把 MinerU 的 content_list.json 转成有序的 (类型, 文本, 页码) 块列表.
 
 核心机制: buffer (正文缓冲区)
@@ -90,8 +104,10 @@ content_to_blocks: 把 MinerU 的 content_list.json 转成有序的 (类型, 文
 - 每个表格, 每张图片各自单独成为一个块, 相邻的也不会合并; 块的顺序和原文一致
 - 块总数 = 非空 flush 的次数 + 表格数 + 图片数
 - 注意: 这里只是按"页面和类型"划分边界; 按长度切分 (SentenceSplitter 512/50) 是在下一步做的
-'''
-def content_to_blocks(content_list_path, describe=describe_image):
+"""
+
+
+def content_to_blocks(content_list_path, describe=describe_image, skipped=None):
     path = Path(content_list_path)
     blocks, buffer, buffer_page = [], [], None
 
@@ -104,17 +120,27 @@ def content_to_blocks(content_list_path, describe=describe_image):
         kind, page = item.get("type"), item.get("page_idx", 0) + 1
         if kind in SKIPPED:
             continue
-        if page != buffer_page: # 换页输出正文
+        if page != buffer_page:  # 换页输出正文
             flush()
             buffer_page = page
-        if kind == "table" and item.get("table_body"): # HTML表格 ->直接使用
+        if kind == "table" and item.get("table_body"):  # HTML表格 ->直接使用
             flush()
             caption = " ".join(item.get("table_caption") or [])
             blocks.append(("table", f"Table: {caption}\n{item['table_body']}", page))
-        elif kind in ("image", "table") and item.get("img_path"): # 调用VLM
+        elif kind in ("image", "table") and item.get("img_path"):  # 调用VLM
             flush()
             caption = " ".join(item.get(f"{kind}_caption") or item.get("img_caption") or [])
-            text = describe(path.parent / item["img_path"], caption) # vlm
+            # A failed figure is skipped and reported; the rest of the PDF is still indexed.
+            try:
+                text = describe(path.parent / item["img_path"], caption)  # vlm
+                reason = "" if text else "the model returned no description"
+            except Exception as error:
+                text, reason = "", f"{type(error).__name__}: {error}"
+            if reason:
+                LOGGER.warning("Skipped figure on page %s: %s", page, reason)
+                if skipped is not None:
+                    skipped.append({"page": page, "caption": caption, "reason": reason})
+                continue
             blocks.append(("figure", f"Figure: {caption}\n{text}", page))
         elif text := (item.get("text") or "").strip():
             buffer.append(text)
@@ -122,16 +148,31 @@ def content_to_blocks(content_list_path, describe=describe_image):
     return blocks
 
 
-def ingest_pdf(pdf_path, context, collection, *, work_dir, parse=run_mineru,
-               describe=describe_image):
-    """Step 4: dedupe, build documents, reuse the existing splitter, append to the index."""
+def ingest_pdf(
+    pdf_path, context, collection, *, work_dir, parse=run_mineru, describe=describe_image
+):
+    """Step 4: dedupe, build documents, reuse the existing splitter, append to the index.
+
+    Returns (doc_id, node count, skipped figures). Each skipped figure is a dict with
+    page, caption, and reason. Nothing is written when an exception is raised before
+    the index update.
+    """
     pdf = Path(pdf_path).resolve()
+    if pdf.suffix.lower() != ".pdf":
+        raise ValueError(f"Only PDF files are supported: {pdf.name}")
     # SHA-256是哈希算法, 读出 PDF 的全部字节，算出 SHA-256，取前 16 个字符，拼成 pdf-3f9a1c... 这样的 doc_id。
     doc_id = "pdf-" + hashlib.sha256(pdf.read_bytes()).hexdigest()[:16]
     if context.docstore.ref_doc_exists(doc_id):
-        raise ValueError(f"{doc_id} is already indexed.")
+        raise ValueError(f"{pdf.name} is already in the knowledge base ({doc_id}).")
 
-    blocks = content_to_blocks(parse(pdf, Path(work_dir)), describe)
+    skipped = []
+    blocks = content_to_blocks(parse(pdf, Path(work_dir)), describe, skipped)
+    if not blocks:
+        raise ValueError(
+            f"No text, tables, or figures could be extracted from {pdf.name} "
+            f"({len(skipped)} figure(s) failed). Nothing was added."
+        )
+    uploaded_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     documents = [
         Document(
             text=text,
@@ -140,11 +181,14 @@ def ingest_pdf(pdf_path, context, collection, *, work_dir, parse=run_mineru,
                 "policy_id": doc_id,
                 "version": "1.0",
                 "category": "uploaded",
-                "doc_type": "uploaded_document",
+                "doc_type": UPLOAD_DOC_TYPE,
                 "content_type": kind,
                 "page": page,
+                "uploaded_at": uploaded_at,
+                "skipped_figures": len(skipped),
             },
-            excluded_embed_metadata_keys=["page"],
+            excluded_embed_metadata_keys=["page", "uploaded_at", "skipped_figures"],
+            excluded_llm_metadata_keys=["uploaded_at", "skipped_figures"],
         )
         for kind, text, page in blocks
     ]
@@ -158,31 +202,54 @@ def ingest_pdf(pdf_path, context, collection, *, work_dir, parse=run_mineru,
     写入检索
     Case A: 已有索引结构（正常情况）
     """
-    if context.index_store.get_index_struct(storage.INDEX_ID):
-        # Required: otherwise nodes only reach Chroma and BM25 never sees them.
+    with WRITE_LOCK:
+        # Another upload of the same file may have finished while this one was parsing.
+        if context.docstore.ref_doc_exists(doc_id):
+            raise ValueError(f"{pdf.name} is already in the knowledge base ({doc_id}).")
+        if context.index_store.get_index_struct(storage.INDEX_ID):
+            # Required: otherwise nodes only reach Chroma and BM25 never sees them.
+            index = load_index_from_storage(
+                context, index_id=storage.INDEX_ID, store_nodes_override=True
+            )
+            # 对于新的节点，向量写入chroma, 元数据写入mango，index写入redis
+            index.insert_nodes(nodes)
+        else:
+            if collection.count():
+                raise ValueError("Chroma has data but no index structure; use a new KB_NAME.")
+            index = VectorStoreIndex(nodes, storage_context=context, store_nodes_override=True)
+            index.set_index_id(storage.INDEX_ID)
+    return doc_id, len(nodes), skipped
+
+
+def list_pdfs(docstore):
+    """Return one row per uploaded PDF, newest first, from the docstore's ref-doc records."""
+    rows = []
+    for doc_id, info in (docstore.get_all_ref_doc_info() or {}).items():
+        metadata = info.metadata or {}
+        if metadata.get("doc_type") != UPLOAD_DOC_TYPE:
+            continue
+        rows.append(
+            {
+                "doc_id": doc_id,
+                "file_name": metadata.get("file_name", doc_id),
+                "uploaded_at": metadata.get("uploaded_at", ""),
+                "skipped_figures": metadata.get("skipped_figures", 0),
+                "chunks": len(info.node_ids),
+            }
+        )
+    return sorted(rows, key=lambda row: row["uploaded_at"], reverse=True)
+
+
+def delete_pdf(context, doc_id):
+    """Remove one uploaded PDF from Chroma, Redis, and MongoDB together.
+
+    Settings.embed_model must be configured, because loading the index resolves it.
+    """
+    with WRITE_LOCK:
+        if not context.docstore.ref_doc_exists(doc_id):
+            raise ValueError(f"{doc_id} is not in the knowledge base.")
+        # Same reason as ingestion: without the override, Redis and MongoDB keep the nodes.
         index = load_index_from_storage(
             context, index_id=storage.INDEX_ID, store_nodes_override=True
         )
-        index.insert_nodes(nodes) # 对于新的节点，向量写入chroma, 元数据写入mango，index写入redis
-    else:
-        if collection.count():
-            raise ValueError("Chroma has data but no index structure; use a new KB_NAME.")
-        index = VectorStoreIndex(nodes, storage_context=context, store_nodes_override=True)
-        index.set_index_id(storage.INDEX_ID)
-    return doc_id, len(nodes)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Append one PDF to PolicyDesk.")
-    parser.add_argument("pdf")
-    parser.add_argument("--content-list", help="Reuse an existing MinerU *_content_list.json.")
-    args = parser.parse_args()
-
-    from base_llm import create_models
-
-    context, collection = storage.connect_storage(services, create=True)
-    services.configure_settings(*create_models())
-    parse = (lambda pdf, out: Path(args.content_list)) if args.content_list else run_mineru
-    with tempfile.TemporaryDirectory() as work_dir:
-        doc_id, count = ingest_pdf(args.pdf, context, collection, work_dir=work_dir, parse=parse)
-    print(f"Indexed {doc_id}: {count} nodes in {storage.KB_NAME}. Restart Streamlit to refresh.")
+        index.delete_ref_doc(doc_id, delete_from_docstore=True)

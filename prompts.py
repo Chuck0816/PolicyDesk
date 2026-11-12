@@ -5,7 +5,8 @@ from llama_index.core.llms import ChatMessage
 from llama_index.core.prompts import ChatPromptTemplate, RichPromptTemplate
 
 QA_PROMPT = PromptTemplate(
-    "Answer in English using only the policy context. "
+    "Answer using only the policy context, in the same language as the question "
+    "(Chinese or English), even when the context is in another language. "
     "If the context does not answer the question, say the policy does not specify it.\n"
     "Context:\n{context_str}\nQuestion: {query_str}\nAnswer:"
 )
@@ -23,7 +24,8 @@ RICH_PROMPT = RichPromptTemplate(
 )
 
 QUERY_REWRITE_PROMPT = PromptTemplate(
-    "Rewrite the question as one English search query for company policies.\n"
+    "Rewrite the question as one search query for company policies, "
+    "in the same language as the question.\n"
     "Preserve intent, negation, comparisons, dates, amounts, units, grades, and policy IDs.\n"
     "Copy existing digit sequences exactly; do not add new digit sequences.\n"
     "Do not add policy facts, assume eligibility, or answer the question.\n"

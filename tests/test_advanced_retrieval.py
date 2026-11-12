@@ -126,3 +126,14 @@ def test_empty_question_is_rejected_before_rewriting():
     with pytest.raises(ValueError, match="must not be empty"):
         QueryRewriteRetriever(FixedRetriever([]), llm).retrieve("   ")
     llm.predict.assert_not_called()
+
+
+def test_bm25_matches_chinese_and_english_keywords():
+    nodes = [
+        TextNode(id_="travel", text="差旅报销需要部门经理审批。"),
+        TextNode(id_="hotel", text="Hotel limits apply to business travel."),
+        TextNode(id_="leave", text="年假天数按工龄计算。"),
+    ]
+    sparse = build_bm25_retriever(nodes, top_k=1)
+    assert sparse.retrieve("报销谁审批")[0].node.node_id == "travel"
+    assert sparse.retrieve("hotel limit")[0].node.node_id == "hotel"
