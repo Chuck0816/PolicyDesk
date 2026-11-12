@@ -8,6 +8,7 @@ browser; they need no server, network access, or Python. The content is sample d
 | `a_evidence_workspace.html` | Three panes: document library, questions, evidence panel | kotaemon (evidence panel with relevance scores) | Dark |
 | `b_answer_engine.html` | Minimal search page; source cards before the answer; library in a drawer | Perplexity (source strip, phase indicator) | Dark, low-noise |
 | `c_help_center.html` | Light employee portal with Ask / Documents tabs and a status table | Glean (cited HR answers), RAGFlow (document status list) | Light |
+| `d_answer_engine_with_table.html` | **Chosen direction:** B's answer page plus C's document table, as two views | B + C | Dark and light |
 
 All three use only data PolicyDesk already returns: file name, page, content type,
 reranker score, chunk count, upload time, and skipped figures. None requires a change
@@ -30,3 +31,22 @@ to retrieval or prompts. Things that would need extra work are listed below.
 - Inline citation markers such as `[1]` inside the answer text (needs a prompt change).
 - Section headings for each excerpt (needs headings stored at ingestion).
 - A parsing percentage (ingestion runs as one step; the UI can only show "parsing").
+
+## Chosen direction: D (B layout + C document table)
+
+Open `d_answer_engine_with_table.html`; add `#docs` to the address for the document
+view and `,light` for the light theme (for example `#docs,light`). It adapts to phone
+widths: source cards use two columns and document rows stack.
+
+- **Ask view (from B):** centered question box, "searching / ranking / writing"
+  phases, source cards before the answer, larger answer text, excerpts with page,
+  type, and reranker score, and fixed example questions.
+- **Documents view (from C):** upload area, an in-progress card with steps,
+  a notice listing skipped figures with page, caption, and reason, status filters,
+  and a table with file, status, chunk count, time added, and an inline delete
+  confirmation.
+- **Streamlit mapping:** `st.segmented_control` switches views; custom CSS styles the
+  cards and table; the theme follows Streamlit's light/dark setting. The upload steps
+  need `ingest_pdf` to report progress through an optional callback, which does not
+  change parsing or retrieval. The interface-language switch needs translated UI
+  strings; answers already follow the question's language.
