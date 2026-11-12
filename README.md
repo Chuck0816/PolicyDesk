@@ -23,8 +23,10 @@ Question (Chinese or English)
   updated in place rather than rebuilt. Each PDF gets a `doc_id` derived from its
   content (`pdf-<sha256 prefix>`), so the same file cannot be added twice. Deleting a
   PDF removes its vectors, node references, and nodes from all three stores.
-- **Parsing:** MinerU runs as a separate command (`MINERU_COMMAND`) so its heavy
-  dependencies stay out of this environment. Page headers, footers, and page numbers
+- **Parsing:** MinerU 4.x runs in its own environment so its heavy dependencies stay
+  out of this one. PolicyDesk calls `mineru_content_list.py` with that environment's
+  Python; the script uses MinerU's Python API to write a content list (MinerU 4.x no
+  longer has a command that does this). Page headers, footers, and page numbers
   are dropped. Text is grouped per page; each table and figure becomes its own block.
   Tables keep MinerU's HTML. If Qwen-VL cannot describe a figure, that figure is
   skipped, the reason is shown, and the rest of the PDF is still added.
@@ -52,6 +54,7 @@ Question (Chinese or English)
 | Module | Responsibility |
 | --- | --- |
 | `pdf_ingestion.py` | MinerU parsing, figure descriptions, adding, listing, and deleting PDFs |
+| `mineru_content_list.py` | Runs inside MinerU's environment and writes the content list |
 | `retrieval.py` | Query rewriting, BM25, rank fusion, and optional metadata scopes |
 | `services.py` | Splitting, query engine assembly, and chat memory |
 | `base_llm.py` | Qwen, embedding, and reranker factories |
@@ -83,12 +86,19 @@ For an existing uv-managed environment without pip, use
 `uv pip install --python .venv/bin/python -r requirements.txt` instead.
 Development dependencies are in `requirements-dev.txt`.
 
-Install MinerU in **its own** virtual environment, following the MinerU
-documentation, so its dependencies do not conflict with this project's. Point
-`MINERU_COMMAND` at that installation, for example
-`MINERU_COMMAND="/path/to/mineru-venv/bin/mineru"`, and append any backend options
-listed by `mineru --help`. PolicyDesk adds `-p <pdf> -o <output folder>` and reads the
-`<name>_content_list.json` that MinerU writes. Alternatively, parse a
+Install MinerU 4.x in **its own** environment so its dependencies do not conflict with
+this project's, for example:
+
+```bash
+conda create -n mineru python=3.11 -y
+conda run -n mineru python -m pip install -U "mineru==4.2.0"
+conda run -n mineru which mineru
+```
+
+Set `MINERU_COMMAND` to the full path printed by the last command, for example
+`/opt/anaconda3/envs/mineru/bin/mineru`. PolicyDesk runs `mineru_content_list.py` with
+the `python` in the same folder (override it with `MINERU_PYTHON`). The first parse
+downloads MinerU's models. Alternatively, parse a
 PDF elsewhere (for example with MinerU's online service) and pass its
 `*_content_list.json` to `python main.py add --content-list` together with its
 `images/` folder.
@@ -114,7 +124,9 @@ VL_MODEL=qwen3-vl-plus
 | `RERANKER_MODEL` | HuggingFace reranker ID or local directory; default shown above |
 | `KB_NAME` | Namespace for one company's nodes, vectors, index structure, and chat keys |
 | `MONGO_DB` | MongoDB database name; default `policydesk` |
-| `MINERU_COMMAND` | Command that runs MinerU, including any extra options |
+| `MINERU_COMMAND` | Full path of the `mineru` executable in MinerU's environment |
+| `MINERU_PYTHON` | Optional Python of MinerU's environment; default: beside `MINERU_COMMAND` |
+| `MINERU_TIER` | Optional MinerU parse tier: `flash`, `basic`, `standard` (default), `advanced` |
 | `VL_MODEL` | DashScope vision model that describes figures |
 | `COMPOSE_PROJECT_NAME` | Optional existing Docker project name; retain it when reusing volumes |
 

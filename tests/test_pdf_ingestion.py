@@ -151,7 +151,47 @@ def test_missing_mineru_explains_how_to_configure_it(monkeypatch, tmp_path):
         pdf_ingestion.run_mineru(tmp_path / "policy.pdf", tmp_path)
 
 
+def test_mineru_runs_the_adapter_with_the_python_beside_it(monkeypatch, tmp_path):
+    bin_dir = tmp_path / "mineru-env" / "bin"
+    bin_dir.mkdir(parents=True)
+    (bin_dir / "mineru").write_text("#!/bin/sh\n")
+    (bin_dir / "mineru").chmod(0o755)
+    monkeypatch.setattr(pdf_ingestion, "MINERU_COMMAND", str(bin_dir / "mineru"))
+    pdf, output = tmp_path / "policy.pdf", tmp_path / "out"
+
+    def fake_run(command, check):
+        (output / "nested").mkdir(parents=True)
+        (output / "nested" / "policy_content_list.json").write_text("[]")
+
+    run = Mock(side_effect=fake_run)
+    monkeypatch.setattr(pdf_ingestion.subprocess, "run", run)
+    assert pdf_ingestion.run_mineru(pdf, output).name == "policy_content_list.json"
+    command = run.call_args.args[0]
+    assert command == [
+        str(bin_dir / "python"),
+        str(pdf_ingestion.MINERU_ADAPTER),
+        "-p",
+        str(pdf),
+        "-o",
+        str(output),
+    ]
+    assert pdf_ingestion.MINERU_ADAPTER.is_file()
+
+
 def test_mineru_failure_names_the_pdf(monkeypatch, tmp_path):
-    monkeypatch.setattr(pdf_ingestion, "MINERU_COMMAND", "false")
+    monkeypatch.setattr(pdf_ingestion, "MINERU_PYTHON", "false")
     with pytest.raises(RuntimeError, match="exit code 1 while parsing policy.pdf"):
         pdf_ingestion.run_mineru(tmp_path / "policy.pdf", tmp_path)
+
+
+def test_lists_code_and_equations_keep_their_text(tmp_path):
+    items = [
+        {"type": "list", "list_items": ["1 超标部分自理。", "2 Lost invoices need approval."]},
+        {"type": "code", "code_body": "limit = 500"},
+        {"type": "equation", "text": "$$a+b$$", "img_path": "images/eq.jpg"},
+    ]
+    path = tmp_path / "items_content_list.json"
+    path.write_text(json.dumps(items, ensure_ascii=False), encoding="utf-8")
+    [(kind, text, page)] = pdf_ingestion.content_to_blocks(path, describe)
+    assert (kind, page) == ("text", 1)
+    assert text == "1 超标部分自理。\n2 Lost invoices need approval.\n\nlimit = 500\n\n$$a+b$$"

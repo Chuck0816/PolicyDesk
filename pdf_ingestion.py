@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import shlex
+import shutil
 import subprocess
 import threading
 from datetime import datetime, timezone
@@ -18,6 +19,15 @@ import storage
 
 LOGGER = logging.getLogger(__name__)
 MINERU_COMMAND = os.getenv("MINERU_COMMAND", "mineru")
+# Optional: the Python of MinerU's environment; by default the one beside MINERU_COMMAND.
+MINERU_PYTHON = os.getenv("MINERU_PYTHON", "")
+# MinerU 4.x has no content-list command, so this script writes one in MinerU's environment.
+MINERU_ADAPTER = Path(__file__).resolve().with_name("mineru_content_list.py")
+MISSING_MINERU = (
+    "MinerU was not found ({command!r}). Install MinerU in its own environment, "
+    "set MINERU_COMMAND in .env to the full path of its `mineru` executable, "
+    "then restart PolicyDesk."
+)
 # 给 PDF 里的图片生成文字描述时用哪个视觉语言模型（VLM）。默认是 DashScope 的 qwen3-vl-plus
 VL_MODEL = os.getenv("VL_MODEL", "qwen3-vl-plus")
 UPLOAD_DOC_TYPE = "uploaded_document"
@@ -42,15 +52,13 @@ def run_mineru(pdf, output_dir):
     pdf -> Path对象
     输出["mineru", "-p", "/docs/差旅政策.pdf", "-o", "/tmp/abc"]命令行参数
     """
-    command = [*shlex.split(MINERU_COMMAND), "-p", str(pdf), "-o", str(output_dir)]
+    # MinerU 4.x rejects `mineru -p ... -o ...`; the same arguments now go to MINERU_ADAPTER,
+    # run by MinerU's Python: [python, mineru_content_list.py, "-p", pdf, "-o", output_dir].
+    command = [mineru_python(), str(MINERU_ADAPTER), "-p", str(pdf), "-o", str(output_dir)]
     try:
         subprocess.run(command, check=True)
     except FileNotFoundError as error:
-        raise ValueError(
-            f"MinerU was not found ({command[0]!r}). Install MinerU in its own environment, "
-            "set MINERU_COMMAND in .env to the full path of its `mineru` executable, "
-            "then restart PolicyDesk."
-        ) from error
+        raise ValueError(MISSING_MINERU.format(command=command[0])) from error
     except subprocess.CalledProcessError as error:
         raise RuntimeError(
             f"MinerU stopped with exit code {error.returncode} while parsing {pdf.name}. "
@@ -64,6 +72,17 @@ def run_mineru(pdf, output_dir):
     if len(matches) != 1:
         raise ValueError(f"Expected one MinerU content list, found {len(matches)}.")
     return matches[0]
+
+
+def mineru_python():
+    """Return MINERU_PYTHON, or the `python` in the same folder as the MINERU_COMMAND executable."""
+    if MINERU_PYTHON:
+        return MINERU_PYTHON
+    name = shlex.split(MINERU_COMMAND)[0]
+    executable = shutil.which(name)
+    if executable is None:
+        raise ValueError(MISSING_MINERU.format(command=name))
+    return str(Path(executable).parent / "python")
 
 
 """这个函数把一张图片和它的图注发给 Qwen-VL,
@@ -139,7 +158,7 @@ def content_to_blocks(content_list_path, describe=describe_image, skipped=None):
             flush()
             caption = " ".join(item.get("table_caption") or [])
             blocks.append(("table", f"Table: {caption}\n{item['table_body']}", page))
-        elif kind in ("image", "table") and item.get("img_path"):  # 调用VLM
+        elif kind in ("image", "table", "chart") and item.get("img_path"):  # 调用VLM
             flush()
             caption = " ".join(item.get(f"{kind}_caption") or item.get("img_caption") or [])
             # A failed figure is skipped and reported; the rest of the PDF is still indexed.
@@ -154,10 +173,16 @@ def content_to_blocks(content_list_path, describe=describe_image, skipped=None):
                     skipped.append({"page": page, "caption": caption, "reason": reason})
                 continue
             blocks.append(("figure", f"Figure: {caption}\n{text}", page))
-        elif text := (item.get("text") or "").strip():
+        elif text := item_text(item):
             buffer.append(text)
     flush()
     return blocks
+
+
+def item_text(item):
+    """Plain text of a non-visual block: paragraphs, titles, lists, code, and equations."""
+    parts = [item.get("text"), "\n".join(item.get("list_items") or []), item.get("code_body")]
+    return "\n".join(part.strip() for part in parts if part and part.strip())
 
 
 def ingest_pdf(
