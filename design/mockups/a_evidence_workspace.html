@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PolicyDesk · A 证据工作台</title>
+<style>
+  :root {
+    --bg: #0d1320; --panel: #131b2b; --panel-2: #182235; --line: #26324a;
+    --text: #e6ecf6; --muted: #8d9bb4; --faint: #5f6d86;
+    --accent: #5b8cff; --accent-soft: rgba(91,140,255,.14);
+    --ok: #3ccf91; --ok-soft: rgba(60,207,145,.13);
+    --warn: #f5b84b; --warn-soft: rgba(245,184,75,.13);
+    --danger: #ff6b7a; --danger-soft: rgba(255,107,122,.12);
+    --hl: rgba(245,184,75,.28);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .app { display: grid; grid-template-columns: 300px minmax(0, 1fr) 380px; height: 100vh; }
+  aside, main, .evidence { min-height: 0; overflow: auto; }
+
+  /* Left: library */
+  aside { background: var(--panel); border-right: 1px solid var(--line); padding: 22px 18px; display: flex; flex-direction: column; gap: 18px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .logo { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, #5b8cff, #8f6bff); display: grid; place-items: center; font-weight: 800; }
+  .brand b { font-size: 16px; letter-spacing: -.01em; }
+  .brand small { display: block; color: var(--muted); font-size: 11px; letter-spacing: .08em; }
+  .section-title { display: flex; justify-content: space-between; align-items: baseline; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+  .drop { border: 1.5px dashed #34446a; border-radius: 12px; padding: 16px; text-align: center; color: var(--muted); background: rgba(91,140,255,.04); }
+  .drop strong { color: var(--text); display: block; margin-bottom: 2px; }
+  .drop .btn { margin-top: 10px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 9px; padding: 7px 12px; font-size: 13px; font-weight: 600; border: 1px solid var(--line); background: var(--panel-2); color: var(--text); cursor: pointer; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.ghost { background: transparent; }
+  .btn.danger { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .search { width: 100%; border-radius: 9px; border: 1px solid var(--line); background: var(--bg); color: var(--text); padding: 8px 11px; font: inherit; }
+  .doc { border: 1px solid var(--line); border-radius: 12px; padding: 12px; background: var(--panel-2); display: grid; gap: 6px; }
+  .doc.active { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .doc-head { display: flex; gap: 10px; align-items: flex-start; }
+  .file { width: 28px; height: 34px; border-radius: 5px; background: #2a3550; position: relative; flex: none; font-size: 9px; font-weight: 800; color: #ff8a8a; display: grid; place-items: end center; padding-bottom: 4px; }
+  .doc-name { font-weight: 600; word-break: break-all; }
+  .meta { color: var(--muted); font-size: 12px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+  .chip.ok { background: var(--ok-soft); color: var(--ok); }
+  .chip.warn { background: var(--warn-soft); color: var(--warn); }
+  .chip.run { background: var(--accent-soft); color: #9db8ff; }
+  .progress { height: 5px; background: #24304a; border-radius: 9px; overflow: hidden; }
+  .progress i { display: block; height: 100%; width: 35%; margin-left: 30%; background: linear-gradient(90deg, #5b8cff, #8f6bff); }
+  .confirm { border-top: 1px dashed var(--line); padding-top: 8px; display: flex; gap: 6px; align-items: center; justify-content: space-between; color: var(--muted); font-size: 12px; }
+  .doc-actions { display: flex; justify-content: flex-end; }
+  .link { color: var(--muted); font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Center: conversation */
+  main { display: flex; flex-direction: column; }
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 28px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: rgba(13,19,32,.92); backdrop-filter: blur(6px); }
+  .scope { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; }
+  .scope .chip { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); }
+  .thread { flex: 1; padding: 28px; display: flex; flex-direction: column; gap: 22px; max-width: 860px; width: 100%; margin: 0 auto; }
+  .q { align-self: flex-end; max-width: 78%; background: var(--accent); color: #fff; padding: 12px 16px; border-radius: 16px 16px 4px 16px; }
+  .a { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; display: grid; gap: 14px; }
+  .a-head { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 12px; }
+  .steps { display: flex; gap: 14px; }
+  .steps span::before { content: "✓ "; color: var(--ok); }
+  .a p { margin: 0; font-size: 15.5px; line-height: 1.75; }
+  .refs { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ref { display: inline-flex; gap: 8px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; background: var(--panel-2); font-size: 12.5px; }
+  .ref.sel { border-color: var(--accent); background: var(--accent-soft); }
+  .ref .n { width: 18px; height: 18px; border-radius: 6px; background: #2a3550; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  .ref .t { color: var(--muted); }
+  .a-foot { display: flex; gap: 8px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+  .composer { position: sticky; bottom: 0; padding: 16px 28px 22px; background: linear-gradient(transparent, var(--bg) 30%); }
+  .box { max-width: 860px; margin: 0 auto; border: 1px solid #34446a; background: var(--panel); border-radius: 16px; padding: 12px 12px 12px 16px; display: flex; gap: 12px; align-items: flex-end; box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+  .box textarea { flex: 1; resize: none; border: 0; outline: 0; background: transparent; color: var(--text); font: inherit; font-size: 15px; height: 46px; }
+  .hint { max-width: 860px; margin: 8px auto 0; color: var(--faint); font-size: 12px; text-align: center; }
+
+  /* Right: evidence */
+  .evidence { background: var(--panel); border-left: 1px solid var(--line); padding: 22px 20px; display: grid; gap: 16px; align-content: start; }
+  .ev-card { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--panel-2); }
+  .ev-card.sel { border-color: var(--accent); }
+  .ev-top { padding: 12px 14px; display: grid; gap: 8px; }
+  .ev-title { display: flex; justify-content: space-between; gap: 8px; font-weight: 600; }
+  .badges { display: flex; gap: 6px; }
+  .badge { font-size: 11px; padding: 2px 7px; border-radius: 6px; background: #24304a; color: #b8c6de; }
+  .score { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+  .bar { height: 6px; border-radius: 9px; background: #24304a; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--ok); }
+  .excerpt { border-top: 1px solid var(--line); padding: 12px 14px; font-size: 13px; color: #c9d4e6; background: #111829; }
+  mark { background: var(--hl); color: inherit; border-radius: 3px; padding: 0 2px; }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.mini th, table.mini td { border: 1px solid #2c3954; padding: 5px 7px; text-align: left; }
+  table.mini th { background: #1c2740; color: var(--muted); font-weight: 600; }
+  tr.hit td { background: var(--hl); }
+  .note { border: 1px solid rgba(245,184,75,.35); background: var(--warn-soft); color: #f7d38f; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; }
+  .collapsed { color: var(--muted); font-size: 12.5px; display: flex; justify-content: space-between; padding: 10px 14px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside>
+    <div class="brand"><div class="logo">P</div><div><b>PolicyDesk</b><small>POLICY ASSISTANT</small></div></div>
+
+    <div class="drop">
+      <strong>拖入 PDF 加入知识库</strong>
+      Drop policy PDFs here · 单个文件 ≤ 200MB
+      <div><span class="btn primary">＋ 选择文件</span></div>
+    </div>
+
+    <div class="section-title"><span>文档库 · Documents</span><span>3</span></div>
+    <input class="search" placeholder="筛选文件名…">
+
+    <div class="doc active">
+      <div class="doc-head"><div class="file">PDF</div><div>
+        <div class="doc-name">差旅报销制度.pdf</div>
+        <div class="meta">14 段 · 2026-11-12 08:30</div></div></div>
+      <div class="chips"><span class="chip ok">● 可检索</span><span class="chip warn">1 张图片已跳过</span></div>
+      <div class="confirm"><span>从知识库删除？</span><span><span class="btn ghost">取消</span> <span class="btn danger">删除</span></span></div>
+    </div>
+
+    <div class="doc">
+      <div class="doc-head"><div class="file">PDF</div><div>
+        <div class="doc-name">Employee_Leave_Policy.pdf</div>
+        <div class="meta">6 chunks · 2026-11-11 10:12</div></div></div>
+      <div class="chips"><span class="chip ok">● 可检索</span></div>
+      <div class="doc-actions"><span class="link">删除…</span></div>
+    </div>
+
+    <div class="doc">
+      <div class="doc-head"><div class="file">PDF</div><div>
+        <div class="doc-name">信息安全分级规范.pdf</div>
+        <div class="meta">解析中 · MinerU + 图片描述</div></div></div>
+      <div class="progress"><i></i></div>
+      <div class="chips"><span class="chip run">◌ 解析中…</span></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div class="scope">检索范围 <span class="chip">全部文档 · 3</span> <span class="chip">中文 / English</span></div>
+      <span class="btn ghost">清空记录</span>
+    </div>
+
+    <div class="thread">
+      <div class="q">L3 员工在一线城市出差，每晚住宿上限是多少？超出部分怎么办？</div>
+      <div class="a">
+        <div class="a-head"><div class="steps"><span>改写问题</span><span>检索 10 段</span><span>重排取 4 段</span></div><span>中文回答</span></div>
+        <p>L3–L4 员工在一线城市出差，住宿上限为<b>每晚 700 元</b>；其他城市为每晚 500 元。超出标准的部分<b>由员工自行承担</b>。如发票丢失，需要部门负责人书面确认。</p>
+        <div class="refs">
+          <span class="ref sel"><span class="n">1</span>差旅报销制度.pdf <span class="t">· 第 1 页 · 表格</span></span>
+          <span class="ref"><span class="n">2</span>差旅报销制度.pdf <span class="t">· 第 2 页 · 正文</span></span>
+          <span class="ref"><span class="n">3</span>差旅报销制度.pdf <span class="t">· 第 1 页 · 正文</span></span>
+        </div>
+        <div class="a-foot">回答仅依据检索到的制度原文 · 未解决的问题请联系 HR 或财务</div>
+      </div>
+    </div>
+
+    <div class="composer">
+      <div class="box"><textarea placeholder="用中文或英文提问，例如：Who approves business class flights?"></textarea><span class="btn primary">提问 →</span></div>
+      <div class="hint">每个问题独立回答，回答使用你提问的语言 · Each question is answered on its own, in your language</div>
+    </div>
+  </main>
+
+  <section class="evidence">
+    <div class="section-title"><span>证据 · Evidence</span><span>4 段</span></div>
+
+    <div class="ev-card sel">
+      <div class="ev-top">
+        <div class="ev-title"><span>① 差旅报销制度.pdf</span></div>
+        <div class="badges"><span class="badge">第 1 页</span><span class="badge">表格</span></div>
+        <div class="score"><div class="bar"><i style="width:94%"></i></div><span>相关度 0.94</span></div>
+      </div>
+      <div class="excerpt">
+        <table class="mini">
+          <tr><th>职级</th><th>一线城市（元/晚）</th><th>其他城市（元/晚）</th></tr>
+          <tr><td>L1-L2</td><td>500</td><td>350</td></tr>
+          <tr class="hit"><td>L3-L4</td><td>700</td><td>500</td></tr>
+          <tr><td>L5</td><td>900</td><td>650</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="ev-card">
+      <div class="ev-top">
+        <div class="ev-title"><span>② 差旅报销制度.pdf</span></div>
+        <div class="badges"><span class="badge">第 2 页</span><span class="badge">正文</span></div>
+        <div class="score"><div class="bar"><i style="width:81%"></i></div><span>相关度 0.81</span></div>
+      </div>
+      <div class="excerpt">四、注意事项<br>1 <mark>超出标准的部分由员工自行承担。</mark><br>2 丢失发票须由部门负责人书面确认。</div>
+    </div>
+
+    <div class="ev-card"><div class="collapsed"><span>③ 差旅报销制度.pdf · 第 1 页 · 正文</span><span>0.63 ▸</span></div></div>
+    <div class="ev-card"><div class="collapsed"><span>④ Employee_Leave_Policy.pdf · p.3 · text</span><span>0.12 ▸</span></div></div>
+
+    <div class="note">⚠ 第 4 段相关度很低，可能与问题无关。相关度是重排模型的相对分数，不代表答案的可信度。</div>
+  </section>
+</div>
+</body>
+</html>

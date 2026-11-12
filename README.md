@@ -1,95 +1,84 @@
 # PolicyDesk
 
-PolicyDesk is a small internal policy assistant with a local web demo and persistent
-CLI conversations. It answers questions about a fictional company's eight English
-policies and displays the retrieved evidence.
+PolicyDesk is a small internal policy assistant. A company adds its own policy PDFs,
+then employees ask questions in Chinese or English and see the retrieved evidence with
+file names and page numbers. It has a local web demo and persistent CLI conversations.
 
 ## Implemented architecture
 
 ```text
-Policy files + validated headers
-  -> business metadata -> SentenceSplitter (512 tokens, 50 overlap)
-  -> MongoDB nodes + Redis index structure + Chroma embeddings
+Policy PDF (web upload or `python main.py add`)
+  -> MinerU content list: text, HTML tables, figures, page numbers
+  -> figures described by Qwen-VL (failed figures are skipped and reported)
+  -> per-page text / table / figure blocks -> SentenceSplitter (512 tokens, 50 overlap)
+  -> appended to MongoDB nodes + Redis index structure + Chroma embeddings
 
-Question + optional category
-  -> one guarded Qwen query rewrite
-  -> scoped vector search + scoped BM25
-  -> reciprocal rank fusion -> BGE reranking -> compact Qwen answer + excerpts
+Question (Chinese or English)
+  -> one guarded Qwen query rewrite in the question's language
+  -> vector search + BM25 (Chinese characters and English words)
+  -> reciprocal rank fusion -> BGE reranking -> Qwen answer in the question's language
 ```
 
-- **Business metadata:** each policy node inherits `policy_title`, `policy_id`,
-  `version`, `owner`, `doc_type`, `language`, and `category`, alongside reader
-  metadata such as `file_name`. IDs, versions, and owners come from the file header;
-  categories come from an explicit filename registry. Missing headers and unregistered
-  policy files stop indexing rather than creating guessed labels.
-- **Optional scope:** the web selector and CLI `--category` apply
-  `category = selected AND doc_type = company_policy`. Chroma filters candidates
-  before vector search; BM25 is built from the matching saved nodes. Neither query
-  rewriting nor an empty result broadens the selected scope. All-policies search
-  also includes a small general HR guidance document.
-- **Query preparation:** one Qwen rewrite prepares an English search query while the
-  original question remains available for reranking and answer generation. Invalid,
-  multiline, oversized, or numerically changed rewrites fall back to the original;
-  provider failures also fall back. These guards do not prove semantic equivalence.
-- **Hybrid retrieval:** vector and English BM25 searches each return up to eight
-  candidates. Reciprocal rank fusion deduplicates evidence and keeps up to ten.
-  BM25 is rebuilt in memory from the database's indexed nodes, never from a separate
-  local corpus or potentially newer source files.
+- **Document management:** PDFs are added and deleted one at a time; the index is
+  updated in place rather than rebuilt. Each PDF gets a `doc_id` derived from its
+  content (`pdf-<sha256 prefix>`), so the same file cannot be added twice. Deleting a
+  PDF removes its vectors, node references, and nodes from all three stores.
+- **Parsing:** MinerU 4.x runs in its own environment so its heavy dependencies stay
+  out of this one. PolicyDesk calls `mineru_content_list.py` with that environment's
+  Python; the script uses MinerU's Python API to write a content list (MinerU 4.x no
+  longer has a command that does this). Page headers, footers, and page numbers
+  are dropped. Text is grouped per page; each table and figure becomes its own block.
+  Tables keep MinerU's HTML. If Qwen-VL cannot describe a figure, that figure is
+  skipped, the reason is shown, and the rest of the PDF is still added.
+- **Node metadata:** `file_name`, `page`, `content_type` (`text`, `table`, `figure`),
+  `policy_id` (the `doc_id`), `uploaded_at`, and `skipped_figures`. Page numbers are
+  kept out of embeddings; upload bookkeeping is kept out of embeddings and prompts.
+- **Query preparation:** one Qwen rewrite prepares a search query in the question's
+  language while the original question remains available for reranking and answer
+  generation. Invalid, multiline, oversized, or numerically changed rewrites fall back
+  to the original; provider failures also fall back.
+- **Hybrid retrieval:** vector and BM25 searches each return up to eight candidates.
+  BM25 treats each Chinese character and each English word as a keyword. Reciprocal
+  rank fusion deduplicates evidence and keeps up to ten. BM25 is rebuilt from the
+  database's indexed nodes.
 - **Post-retrieval processing:** local `BAAI/bge-reranker-large` keeps up to four
-  excerpts. Displayed scores are reranker relevance scores, not probabilities or
-  answer-confidence estimates.
-- **Answers and sessions:** Qwen Plus streams English answers using a compact
-  context synthesizer and an explicit unknown-answer instruction. CLI chat uses
-  question condensation and a Redis-backed 3,000-token memory window. Histories
-  are separated by knowledge base, session, and selected category. Empty model
-  output raises an actionable error instead of being displayed as success or saved
-  as an empty CLI chat turn.
-- **Web demo:** independent questions, example prompts, a scope selector, local
-  policy previews, streamed answers, and expandable excerpts with policy ID,
-  version, category, and relevance score. Models are shared across scope-specific
-  engines and load only when the first valid question is submitted.
+  excerpts. Displayed scores are reranker relevance scores, not probabilities.
+- **Answers and sessions:** Qwen Plus streams answers in the question's language.
+  CLI chat uses question condensation and a Redis-backed 3,000-token memory window per
+  knowledge base and session. Empty model output raises an actionable error.
+- **Web demo:** two views, Ask and Documents, with a Chinese/English interface switch
+  (answers always follow the question's language) and Streamlit's light or dark theme.
+  Ask shows search, ranking, and writing phases, source cards with file, page, and
+  type before the streamed answer, expandable excerpts, and example questions.
+  Documents has an upload area with step-by-step progress, notices for skipped
+  figures, a filter for documents with skipped figures, and a table with status,
+  chunk count, time added, and confirmed deletion. Models load once per process; the
+  search engine is rebuilt automatically after a PDF is added or deleted. The design
+  is `design/mockups/d_answer_engine_with_table.html`.
 
 | Module | Responsibility |
 | --- | --- |
-| `ingestion.py` | Policy registry, header validation, and document metadata |
-| `retrieval.py` | Scope filters, query rewriting, BM25, and rank fusion |
+| `pdf_ingestion.py` | MinerU parsing, figure descriptions, adding, listing, and deleting PDFs |
+| `mineru_content_list.py` | Runs inside MinerU's environment and writes the content list |
+| `retrieval.py` | Query rewriting, BM25, rank fusion, and optional metadata scopes |
 | `services.py` | Splitting, query engine assembly, and chat memory |
 | `base_llm.py` | Qwen, embedding, and reranker factories |
 | `storage.py` | MongoDB, Redis, and Chroma connections |
-| `main.py` | Preview, index build, questions, and persistent CLI chat |
+| `main.py` | CLI: add, delete, list, ask, and persistent chat |
 | `app.py` | Streamlit interface and resource caching |
+| `ui_text.py` | Chinese and English interface text |
 | `prompts.py` | Answer and rewrite prompts, plus reusable template variants |
+| `ingestion.py`, `data/` | Sample text policies used only by the offline tests |
 
-The vector-only service mode remains available for baseline comparisons and tests.
-Both public interfaces use the advanced pipeline.
-
-## Policy library
-
-The files in `data/` contain illustrative rules, amounts, salary bands, and reporting
-relationships, not real employee records or actual company secrets.
-
-| File | Category | Coverage |
-| --- | --- | --- |
-| `leave_policy.txt` | `leave` | Requests, approval thresholds, emergencies, handovers |
-| `travel_policy.txt` | `travel` | Approvals, lodging limits, invoices, claim deadlines |
-| `overtime_policy.txt` | `overtime` | Working hours, cumulative approvals, compensatory time |
-| `salary_policy.txt` | `salary` | Pay dates, L1–L5 bands, reviews, payroll corrections |
-| `promotion_policy.txt` | `promotion` | Career levels, evidence, review windows, appeals |
-| `employee_benefits_policy.txt` | `benefits` | Learning budgets, wellbeing, equipment claims |
-| `information_classification_policy.txt` | `information_security` | Public, Internal, Confidential, Restricted handling |
-| `company_hierarchy_policy.txt` | `organization` | Departments, reporting lines, roles, delegation |
-
-New policy files must be registered in `POLICY_CATEGORIES` and start with a title,
-`Policy ID:`, `Version:`, and `Policy owner:` (or `Policy owners:`) before the
-first blank line. Metadata is descriptive; a version field does not automatically
-resolve competing or superseded policies.
+The knowledge base contains only PDFs you add. The sample policies in `data/` are test
+fixtures and are never indexed by the app or CLI.
 
 ## Installation
 
-Requirements: Python 3.11, Docker with Compose, and a DashScope key authorized for
-`qwen-plus`. Internet access is needed for dependency installation, Qwen calls,
-and initial HuggingFace model downloads. Embedding and reranker weights run locally
-and can use substantial memory; initial startup is slower.
+Requirements: Python 3.11, Docker with Compose, a DashScope key authorized for
+`qwen-plus` and the vision model (`qwen3-vl-plus` by default), and MinerU. Internet
+access is needed for dependency installation, Qwen calls, and initial HuggingFace model
+downloads. Embedding and reranker weights run locally and can use substantial memory.
 
 Run these commands from the PolicyDesk directory:
 
@@ -103,6 +92,23 @@ For an existing uv-managed environment without pip, use
 `uv pip install --python .venv/bin/python -r requirements.txt` instead.
 Development dependencies are in `requirements-dev.txt`.
 
+Install MinerU 4.x in **its own** environment so its dependencies do not conflict with
+this project's, for example:
+
+```bash
+conda create -n mineru python=3.11 -y
+conda run -n mineru python -m pip install -U "mineru==4.2.0"
+conda run -n mineru which mineru
+```
+
+Set `MINERU_COMMAND` to the full path printed by the last command, for example
+`/opt/anaconda3/envs/mineru/bin/mineru`. PolicyDesk runs `mineru_content_list.py` with
+the `python` in the same folder (override it with `MINERU_PYTHON`). The first parse
+downloads MinerU's models. Alternatively, parse a
+PDF elsewhere (for example with MinerU's online service) and pass its
+`*_content_list.json` to `python main.py add --content-list` together with its
+`images/` folder.
+
 For a new installation, copy `.env.example` to `.env`. If `.env` already exists,
 edit it and preserve existing settings. Obtain a key through the
 [official Model Studio API key guide](https://help.aliyun.com/zh/model-studio/get-api-key).
@@ -111,24 +117,34 @@ edit it and preserve existing settings. Obtain a key through the
 DASHSCOPE_API_KEY=your_dashscope_api_key
 EMBEDDING_MODEL=BAAI/bge-large-zh-v1.5
 RERANKER_MODEL=BAAI/bge-reranker-large
-KB_NAME=policydesk_metadata_v1
+KB_NAME=policydesk_uploads_v1
 MONGO_DB=policydesk
+MINERU_COMMAND=mineru
+VL_MODEL=qwen3-vl-plus
 ```
 
 | Variable | Meaning |
 | --- | --- |
-| `DASHSCOPE_API_KEY` | Required for Qwen model initialization and inference |
+| `DASHSCOPE_API_KEY` | Required for Qwen answers, query rewriting, and figure descriptions |
 | `EMBEDDING_MODEL` | HuggingFace model ID or local directory; default shown above |
 | `RERANKER_MODEL` | HuggingFace reranker ID or local directory; default shown above |
-| `KB_NAME` | Shared namespace for saved nodes, vectors, index structure, and chat keys |
+| `KB_NAME` | Namespace for one company's nodes, vectors, index structure, and chat keys |
 | `MONGO_DB` | MongoDB database name; default `policydesk` |
+| `MINERU_COMMAND` | Full path of the `mineru` executable in MinerU's environment |
+| `MINERU_PYTHON` | Optional Python of MinerU's environment; default: beside `MINERU_COMMAND` |
+| `MINERU_TIER` | Optional MinerU parse tier: `flash`, `basic`, `standard` (default), `advanced` |
+| `VL_MODEL` | DashScope vision model that describes figures |
 | `COMPOSE_PROJECT_NAME` | Optional existing Docker project name; retain it when reusing volumes |
 
 The code loads `.env` beside the Python modules. Shell variables take precedence.
-Keep real keys out of source control. The DashScope adapter uses its default
-China (Beijing) endpoint, so the key must be valid for that region. The existing
-embedding default is retained for index compatibility; switching embeddings requires
-a new knowledge base.
+Keep real keys out of source control. The DashScope adapter uses its default China
+(Beijing) endpoint, so the key must be valid for that region. Figure images are uploaded
+to DashScope for description. Switching embedding models requires a new `KB_NAME`.
+
+**Upgrading from the sample-policy version:** an existing namespace such as
+`policydesk_metadata_v1` still contains the eight sample policies. Set a new, unused
+`KB_NAME` (for example `policydesk_uploads_v1`) so that the knowledge base starts empty.
+Old namespaces are retained and not deleted.
 
 Start the services:
 
@@ -138,44 +154,31 @@ docker compose ps
 ```
 
 MongoDB, Redis, and Chroma bind to localhost ports 27028, 6389, and 8018.
-Named volumes persist data. Keep existing Compose project and MongoDB database
-settings when reusing an installation.
+Named volumes persist data.
 
-## Build and run
+## Run
 
 ```bash
-python main.py preview
-python main.py build
-python main.py ask "Who approves four working days of leave?"
-python main.py ask "When is monthly salary paid?" --category salary
-python main.py chat --session employee-travel --category travel
 python -m streamlit run app.py
+python main.py add /path/to/travel_policy.pdf
+python main.py add /path/to/leave_policy.pdf --content-list /path/to/leave_policy_content_list.json
+python main.py list
+python main.py ask "出差住宿标准是多少？"
+python main.py ask "Who approves four working days of leave?"
+python main.py chat --session employee-travel
+python main.py delete pdf-0123456789abcdef
 ```
 
-- `preview` shows source text, node counts, and metadata without loading models or
-  connecting to databases.
-- `build` indexes the entire registered library once. It refuses a populated
-  namespace. `--category` applies only to `ask` and `chat`.
-- Omit `--category` to search all policies. Enter `/exit` to leave CLI chat.
-  Reuse the same session and scope to restore history.
-- Open [the local demo](http://127.0.0.1:8501), select a scope, and submit a question.
-  Changing scope clears the previous displayed answer without querying automatically.
-  Web questions do not share the CLI conversation history.
-- The sidebar reads local files, while answers use the saved database snapshot.
-  Editing a text file does not update an existing index.
-
-### Existing-index migration
-
-Older indexes do not gain business metadata by changing the loader. To use the new
-scopes, choose an unused `KB_NAME` in `.env` (for example,
-`policydesk_metadata_v1`), keep the existing `MONGO_DB` and
-`COMPOSE_PROJECT_NAME`, then run `python main.py build` and restart Streamlit.
-
-Use another new namespace after changing policy content, metadata, or the embedding
-model, or after an interrupted build. Query paths only open existing Chroma
-collections; they do not create empty collections. Builds are not transactional
-across the three databases, and there is no automatic partial-build repair.
-Old namespaces and histories are retained; no migration command deletes them.
+- In [the local demo](http://127.0.0.1:8501), open **Documents**, add a PDF, wait
+  for the steps to finish, then switch to **Ask**. Delete asks for confirmation.
+  Skipped figures are listed after the upload and counted in the document table.
+- `list` shows each document ID, file name, chunk count, upload time, and skipped
+  figures. Use the ID with `delete`. Deleted PDFs can be added again.
+- Adding the same file twice is rejected before any parsing or model calls.
+- Questions are rejected until at least one PDF has been added. Enter `/exit` to leave
+  CLI chat; reuse the same session to restore history.
+- The web demo rebuilds its search engine after its own uploads and deletions. Restart
+  Streamlit after adding or deleting PDFs from the CLI so keyword search sees them.
 
 ## Testing
 
@@ -188,12 +191,12 @@ python -m ruff check .
 python -m ruff format --check .
 ```
 
-Use `uv pip install --python .venv/bin/python -r requirements-dev.txt` if the
-environment has no pip. Offline tests use model/storage doubles and need no API
-key, model downloads, or running databases. They cover header validation, metadata
-inheritance, both retrieval modes' scope isolation, fusion, rewrite fallback,
-original-question preservation, conversation memory, collection lifecycle, and
-Streamlit streaming/error/scope/cache behavior.
+Offline tests use model and storage doubles and need no API key, MinerU, model
+downloads, or running databases. They cover PDF parsing with skipped figures; adding,
+listing, deleting, and re-adding PDFs while Chroma, the docstore, and the index
+structure stay consistent; duplicate and empty PDFs; Chinese and English keyword
+search; rewrite fallback; original-question preservation; conversation memory; and
+Streamlit upload, deletion, streaming, and error behavior.
 
 With the three database services running:
 
@@ -201,22 +204,17 @@ With the three database services running:
 POLICYDESK_INTEGRATION=1 python -m pytest -k database -q
 ```
 
-This builds and reloads an isolated `policydesk_test_*` namespace, verifies metadata
-filtering through Chroma and BM25, and restores Redis chat history. It uses test-only
-embedding and language models plus a lightweight postprocessor; it does not call
-Qwen or test BGE model quality. Test namespaces are retained, and existing policy
-namespaces are not modified.
+This builds and reloads an isolated `policydesk_test_*` namespace from the sample text
+policies, verifies metadata filtering through Chroma and BM25, and restores Redis chat
+history. It uses test-only models and does not call Qwen or MinerU.
 
 If Qwen returns no answer, check the key, region, and account quota. In particular,
 `AllocationQuota.FreeTierOnly` means that the account has exhausted its free quota
-while paid usage is disabled. Account and billing settings must be resolved in Model
-Studio; the application does not change them or substitute another provider.
+while paid usage is disabled.
 
-For a real-model smoke test, use `ask` with a built namespace and a valid key, then
-inspect the answer and excerpts. For example, ask about payroll within `salary`,
-then ask a travel question within that same scope: every returned excerpt must
-remain a salary-policy excerpt, and unsupported claims should be reported as
-unspecified. This is a manual check, not a measured retrieval-quality benchmark.
+For a real-model smoke test, add a PDF that contains a flowchart and a table, then ask
+questions answered only by the text, only by the table, and only by the figure, in both
+Chinese and English. Check that the excerpts show the correct file and page.
 
 ## Operations and limitations
 
@@ -226,22 +224,21 @@ docker compose start
 docker compose logs --tail 30
 ```
 
-Restart Streamlit after configuration or index changes to refresh cached resources.
 Keep Docker volumes to retain data; do not use volume-removal commands for routine
 restarts. Stop Streamlit with Ctrl+C.
 
-This remains a simplified local application without user authentication, access
-control, incremental indexing, or production monitoring. Category filters are search
-controls, not permission checks. Policy excerpts are supporting evidence rather
-than verified sentence-level citations. Retrieved context and prompts reduce
-unsupported answers but cannot guarantee correctness; unresolved policy questions
-should go to the relevant policy owner.
+This remains a simplified local application without user authentication or access
+control. One `KB_NAME` holds one company's documents; serving several companies needs
+one deployment (or process) per `KB_NAME`. Adding and deleting are serialized within
+one process; do not change the same knowledge base from the CLI and the web demo at
+the same time. Updates across the three databases are not transactional. Chinese
+keyword search matches single characters, which is coarser than word segmentation.
+Policy excerpts are supporting evidence rather than verified sentence-level citations;
+unresolved policy questions should go to the relevant policy owner.
 
 ## Future work
 
-Possible follow-up improvements include a representative retrieval/answer evaluation
-set, parent–child context expansion when longer documents justify it, and explicit
-effective-date/version resolution. Authentication and access control would be needed
-before a shared deployment with sensitive records. These are not implemented.
-Query rewriting, business metadata filtering, hybrid retrieval, and reranking are
-already implemented and are not roadmap items.
+Possible follow-up improvements include a representative bilingual evaluation set,
+Markdown conversion and splitting for large tables, section headings in metadata,
+Chinese word segmentation for keyword search, background ingestion jobs, several
+companies per deployment with authentication, and explicit version replacement.

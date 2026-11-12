@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PolicyDesk · C HR 帮助中心</title>
+<style>
+  :root {
+    --bg: #f4f6fa; --card: #ffffff; --line: #e3e8f0; --line-2: #eef1f6;
+    --text: #172036; --muted: #5d6a82; --faint: #8b96aa;
+    --brand: #2453d6; --brand-soft: #e9efff; --brand-ink: #17368f;
+    --ok: #128a5b; --ok-soft: #e4f6ee;
+    --warn: #a86400; --warn-soft: #fff3dc;
+    --run: #2453d6; --run-soft: #e9efff;
+    --danger: #c9283c; --danger-soft: #fdecee;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 14px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+  .top { background: var(--card); border-bottom: 1px solid var(--line); }
+  .top-in { max-width: 1180px; margin: 0 auto; padding: 0 28px; display: flex; align-items: center; gap: 28px; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 750; font-size: 16px; }
+  .brand i { width: 28px; height: 28px; border-radius: 8px; background: var(--brand); display: grid; place-items: center; color: #fff; font-style: normal; font-size: 14px; }
+  .tabs { display: flex; gap: 4px; height: 100%; }
+  .tab { display: flex; align-items: center; padding: 0 14px; color: var(--muted); font-weight: 600; border-bottom: 2px solid transparent; }
+  .tab.on { color: var(--brand); border-bottom-color: var(--brand); }
+  .tab .n { margin-left: 6px; background: var(--line-2); color: var(--muted); border-radius: 99px; padding: 0 7px; font-size: 12px; }
+  .right { margin-left: auto; display: flex; gap: 10px; align-items: center; color: var(--muted); font-size: 13px; }
+  .lang { border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; }
+
+  .hero { background: linear-gradient(180deg, #e8eefc, var(--bg)); }
+  .hero-in { max-width: 1180px; margin: 0 auto; padding: 34px 28px 26px; }
+  .eyebrow { color: var(--brand); font-size: 12px; font-weight: 750; letter-spacing: .12em; }
+  h1 { margin: 6px 0 4px; font-size: 30px; letter-spacing: -.03em; }
+  .sub { color: var(--muted); margin: 0 0 18px; }
+  .askbox { background: var(--card); border: 1px solid #cfd8ea; border-radius: 14px; display: flex; align-items: center; gap: 12px; padding: 8px 8px 8px 18px; box-shadow: 0 8px 24px rgba(36,83,214,.08); }
+  .askbox input { flex: 1; border: 0; outline: 0; font: inherit; font-size: 16px; color: var(--text); background: transparent; }
+  .btn { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; border-radius: 9px; padding: 9px 16px; font-weight: 650; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 13.5px; }
+  .btn.primary { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .btn.sm { padding: 5px 10px; font-size: 12.5px; }
+  .btn.danger { color: var(--danger); border-color: #f2c4ca; background: #fff; }
+  .topics { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .topic { background: var(--card); border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; color: var(--muted); font-size: 13px; }
+
+  .grid { max-width: 1180px; margin: 0 auto; padding: 8px 28px 40px; display: grid; grid-template-columns: minmax(0, 1fr) 460px; gap: 22px; align-items: start; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .card-h { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--line-2); }
+  .card-h h2 { margin: 0; font-size: 15px; }
+  .card-b { padding: 18px 20px; }
+
+  .answer-q { font-weight: 650; font-size: 16px; margin-bottom: 10px; }
+  .answer-t { font-size: 15.5px; line-height: 1.8; }
+  .answer-t ul { margin: 8px 0 0; padding-left: 20px; }
+  .basis { margin-top: 14px; background: var(--brand-soft); color: var(--brand-ink); border-radius: 10px; padding: 9px 12px; font-size: 13px; }
+  .srcs { display: grid; gap: 10px; margin-top: 14px; }
+  .src { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+  .doc-ico { width: 34px; height: 40px; border-radius: 6px; background: var(--danger-soft); color: var(--danger); font-size: 10px; font-weight: 800; display: grid; place-items: end center; padding-bottom: 5px; }
+  .src .n { font-weight: 650; }
+  .src .m { color: var(--muted); font-size: 12.5px; }
+  .rel { font-size: 12px; color: var(--muted); text-align: right; }
+  .rel b { display: block; color: var(--text); font-size: 13px; }
+  .contact { display: flex; gap: 10px; align-items: center; margin-top: 16px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--line-2); padding-top: 14px; }
+
+  .drop { border: 1.5px dashed #b9c6e2; border-radius: 12px; background: #f8faff; padding: 18px; text-align: center; color: var(--muted); }
+  .drop b { color: var(--text); display: block; font-size: 14.5px; margin-bottom: 2px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; color: var(--faint); font-weight: 650; font-size: 11.5px; letter-spacing: .06em; text-transform: uppercase; padding: 10px 16px; border-bottom: 1px solid var(--line-2); }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--line-2); vertical-align: middle; }
+  td .n { font-weight: 600; }
+  td .m { color: var(--muted); font-size: 12px; }
+  .st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 650; border-radius: 99px; padding: 3px 9px; white-space: nowrap; }
+  .st.ok { background: var(--ok-soft); color: var(--ok); }
+  .st.warn { background: var(--warn-soft); color: var(--warn); }
+  .st.run { background: var(--run-soft); color: var(--run); }
+  .bar { height: 5px; background: var(--line-2); border-radius: 9px; overflow: hidden; margin-top: 6px; width: 120px; }
+  .bar i { display: block; height: 100%; width: 35%; margin-left: 30%; background: var(--brand); }
+  .confirm-row td { background: var(--danger-soft); }
+  .confirm { display: flex; justify-content: space-between; align-items: center; gap: 10px; color: var(--danger); font-size: 13px; }
+  .foot { color: var(--faint); font-size: 12px; padding: 12px 20px; }
+</style>
+</head>
+<body>
+<div class="top"><div class="top-in">
+  <div class="brand"><i>P</i>PolicyDesk</div>
+  <div class="tabs"><span class="tab on">提问 Ask</span><span class="tab">文档管理 Documents <span class="n">3</span></span></div>
+  <div class="right"><span class="lang">中文 · EN</span><span>HR 与财务政策助手</span></div>
+</div></div>
+
+<div class="hero"><div class="hero-in">
+  <div class="eyebrow">EMPLOYEE SUPPORT</div>
+  <h1>公司制度，清楚的答案。</h1>
+  <p class="sub">基于你们公司上传的制度文件回答，并标出原文页码。支持中文和英文提问。</p>
+  <div class="askbox"><input value="L3 员工在一线城市出差，每晚住宿上限是多少？超出部分怎么办？"><span class="btn primary">提问</span></div>
+  <div class="topics"><span class="topic">差旅报销</span><span class="topic">请假审批</span><span class="topic">加班与调休</span><span class="topic">信息安全</span><span class="topic">Who approves leave?</span></div>
+</div></div>
+
+<div class="grid">
+  <section class="card">
+    <div class="card-h"><h2>回答</h2><span class="btn sm">复制</span></div>
+    <div class="card-b">
+      <div class="answer-q">L3 员工在一线城市出差，每晚住宿上限是多少？超出部分怎么办？</div>
+      <div class="answer-t">
+        L3–L4 员工在一线城市出差，住宿上限为 <b>每晚 700 元</b>，其他城市为每晚 500 元。
+        <ul><li>超出标准的部分由员工自行承担。</li><li>报销需在出差结束后 10 个工作日内提交，并附发票原件。</li></ul>
+      </div>
+      <div class="basis">依据 1 份制度中的 3 段原文。相关度为重排模型的相对分数，不代表答案的可信度。</div>
+      <div class="srcs">
+        <div class="src"><div class="doc-ico">PDF</div><div><div class="n">差旅报销制度.pdf</div><div class="m">第 1 页 · 表格</div></div><div class="rel">相关度<b>0.94</b></div></div>
+        <div class="src"><div class="doc-ico">PDF</div><div><div class="n">差旅报销制度.pdf</div><div class="m">第 2 页 · 正文</div></div><div class="rel">相关度<b>0.81</b></div></div>
+        <div class="src"><div class="doc-ico">PDF</div><div><div class="n">差旅报销制度.pdf</div><div class="m">第 1 页 · 正文</div></div><div class="rel">相关度<b>0.63</b></div></div>
+      </div>
+      <div class="contact">没有找到答案？<span class="btn sm">联系 HR</span><span class="btn sm">联系财务</span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-h"><h2>文档管理</h2><span class="btn sm">全部 3</span></div>
+    <div class="card-b"><div class="drop"><b>拖入 PDF，或点击上传</b>解析表格和图片后自动加入知识库 · ≤ 200MB</div></div>
+    <table>
+      <tr><th>文件</th><th>状态</th><th style="width:72px"></th></tr>
+      <tr><td><div class="n">信息安全分级规范.pdf</div><div class="m">刚刚上传</div></td><td><span class="st run">◌ 解析中</span><div class="bar"><i></i></div></td><td></td></tr>
+      <tr><td><div class="n">差旅报销制度.pdf</div><div class="m">14 段 · 今天 08:30</div></td><td><span class="st warn">● 1 图已跳过</span></td><td><span class="btn sm danger">删除</span></td></tr>
+      <tr><td><div class="n">Employee_Leave_Policy.pdf</div><div class="m">6 chunks · 昨天 10:12</div></td><td><span class="st ok">● 可检索</span></td><td><span class="btn sm danger">删除</span></td></tr>
+      <tr class="confirm-row"><td colspan="3"><div class="confirm"><span>确定从知识库删除 Employee_Leave_Policy.pdf？</span><span><span class="btn sm">取消</span> <span class="btn sm primary" style="background:var(--danger);border-color:var(--danger)">删除</span></span></div></td></tr>
+    </table>
+    <div class="foot">跳过的图片无法生成文字描述，其内容暂不可检索；其余内容已入库。</div>
+  </section>
+</div>
+</body>
+</html>

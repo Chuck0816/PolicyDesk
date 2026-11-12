@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PolicyDesk · D 答案引擎 + 文档表格</title>
+<style>
+  :root {
+    --bg: #101012; --surface: #18181b; --surface-2: #1f1f23; --line: #2c2c31; --line-2: #232327;
+    --text: #ececef; --strong: #ffffff; --muted: #9a9aa3; --faint: #66666e;
+    --accent: #2fb7a6; --accent-ink: #062420; --accent-soft: rgba(47,183,166,.14);
+    --ok: #3fcf8e; --ok-soft: rgba(63,207,142,.13);
+    --warn: #e9b44c; --warn-soft: rgba(233,180,76,.13);
+    --danger: #ff6b6b; --danger-soft: rgba(255,107,107,.12);
+    --code: #cfcfd6; --shadow: rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #f7f7f5; --surface: #ffffff; --surface-2: #f2f2ef; --line: #e2e2dd; --line-2: #ecece8;
+    --text: #1d1d20; --strong: #000000; --muted: #66666f; --faint: #9a9aa2;
+    --accent: #138a7d; --accent-ink: #ffffff; --accent-soft: rgba(19,138,125,.1);
+    --ok: #13804f; --ok-soft: #e3f4ec; --warn: #9a6200; --warn-soft: #fdf1d9;
+    --danger: #c62f3f; --danger-soft: #fcebed; --code: #2a2a30; --shadow: rgba(0,0,0,.06);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+
+  header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 16px 32px; border-bottom: 1px solid var(--line-2); }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.01em; }
+  .mark { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--accent); display: grid; place-items: center; }
+  .mark::after { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .switch { display: flex; gap: 2px; padding: 3px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); }
+  .switch a { padding: 6px 16px; border-radius: 99px; color: var(--muted); text-decoration: none; font-size: 14px; display: flex; gap: 7px; align-items: center; }
+  .switch a.on { background: var(--surface-2); color: var(--text); box-shadow: 0 1px 2px var(--shadow); }
+  .count { background: var(--accent-soft); color: var(--accent); border-radius: 99px; padding: 0 7px; font-weight: 700; font-size: 12px; }
+  .tools { justify-self: end; display: flex; gap: 8px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-size: 13px; text-decoration: none; }
+
+  .view { display: none; }
+  .view.on { display: block; }
+  .wrap { max-width: 780px; margin: 0 auto; padding: 8px 24px 72px; }
+  .wide { max-width: 1040px; margin: 0 auto; padding: 28px 24px 72px; }
+
+  /* Ask view (from B) */
+  .ask h1 { font-size: 34px; letter-spacing: -.03em; font-weight: 650; margin: 34px 0 18px; }
+  .search { border: 1px solid var(--line); background: var(--surface); border-radius: 18px; padding: 14px 16px 12px; box-shadow: 0 0 0 4px var(--accent-soft); }
+  .search .q { font-size: 17px; min-height: 28px; }
+  .search .row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+  .scope { font-size: 12.5px; color: var(--muted); }
+  .go { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; font-weight: 800; }
+  .phase { display: flex; gap: 18px; margin: 24px 0 6px; color: var(--muted); font-size: 13px; }
+  .phase span { display: inline-flex; align-items: center; gap: 6px; }
+  .phase .done::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .phase .now { color: var(--text); }
+  .phase .now::before { content: ""; width: 7px; height: 7px; border-radius: 50%; border: 2px solid var(--accent); }
+  .label { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin: 22px 0 10px; }
+  .sources { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .src { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: grid; gap: 6px; min-height: 92px; }
+  .src .t { font-size: 13px; line-height: 1.4; max-height: 2.8em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .src .f { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--muted); margin-top: auto; }
+  .src.low { place-items: center; color: var(--muted); font-size: 13px; text-align: center; border-style: dashed; }
+  .ico { width: 16px; height: 16px; border-radius: 4px; display: grid; place-items: center; font-size: 9px; font-weight: 800; flex: none; }
+  .ico.table { background: var(--accent-soft); color: var(--accent); }
+  .ico.text { background: rgba(130,130,255,.16); color: #8f8fff; }
+  .ico.fig { background: var(--warn-soft); color: var(--warn); }
+  .answer { font-size: 17px; line-height: 1.8; }
+  .answer p { margin: 0 0 14px; }
+  .answer b { color: var(--strong); }
+  .actions { display: flex; gap: 8px; }
+  details { border-top: 1px solid var(--line); margin-top: 24px; }
+  summary { list-style: none; cursor: pointer; padding: 16px 0; display: flex; justify-content: space-between; color: var(--muted); font-size: 14px; }
+  .ex { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+  .ex-h { display: flex; justify-content: space-between; color: var(--muted); font-size: 12.5px; margin-bottom: 8px; }
+  .ex pre { margin: 0; white-space: pre-wrap; font: 13.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--code); }
+  .related div { padding: 12px 2px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; }
+  .related div::after { content: "＋"; color: var(--accent); }
+  .disclaimer { color: var(--faint); font-size: 12.5px; margin-top: 26px; }
+
+  /* Documents view (C's table, B's look) */
+  .doc-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 18px; }
+  .doc-head h2 { margin: 0; font-size: 26px; letter-spacing: -.02em; }
+  .doc-head p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+  .btn { display: inline-flex; align-items: center; gap: 6px; border-radius: 10px; padding: 8px 14px; font-weight: 650; font-size: 13.5px; border: 1px solid var(--line); background: var(--surface); color: var(--text); white-space: nowrap; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.sm { padding: 5px 10px; font-size: 12.5px; border-radius: 8px; }
+  .btn.del { color: var(--danger); }
+  .btn.del-solid { background: var(--danger); border-color: var(--danger); color: #fff; }
+  .drop { border: 1.5px dashed var(--line); border-radius: 16px; background: var(--surface); padding: 22px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .drop b { display: block; font-size: 15px; }
+  .drop span { color: var(--muted); font-size: 13.5px; }
+  .uploading { margin-top: 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); padding: 14px 16px; display: grid; gap: 8px; }
+  .uploading .top { display: flex; justify-content: space-between; font-size: 14px; }
+  .steps { display: flex; gap: 16px; color: var(--muted); font-size: 12.5px; }
+  .steps .done::before { content: "✓ "; color: var(--accent); }
+  .steps .now { color: var(--text); }
+  .steps .now::before { content: "◌ "; color: var(--accent); }
+  .bar { height: 4px; border-radius: 9px; background: var(--line-2); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 32%; margin-left: 34%; background: var(--accent); border-radius: 9px; }
+  .notice { margin-top: 12px; background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 40%, transparent); color: var(--text); border-radius: 14px; padding: 12px 16px; font-size: 13.5px; }
+  .notice b { color: var(--warn); }
+  .notice ul { margin: 6px 0 0; padding-left: 18px; color: var(--muted); font-size: 12.5px; }
+  .filters { display: flex; gap: 8px; margin: 22px 0 10px; }
+  .filter { padding: 5px 12px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+  .filter.on { background: var(--surface-2); color: var(--text); }
+  .table { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; background: var(--surface); }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; color: var(--faint); font-weight: 650; font-size: 11.5px; letter-spacing: .07em; text-transform: uppercase; padding: 11px 18px; border-bottom: 1px solid var(--line); }
+  td { padding: 14px 18px; border-bottom: 1px solid var(--line-2); vertical-align: middle; font-size: 14px; }
+  tr:last-child td { border-bottom: 0; }
+  .file { display: flex; gap: 12px; align-items: center; }
+  .pdf { width: 30px; height: 36px; border-radius: 6px; background: var(--danger-soft); color: var(--danger); font-size: 9px; font-weight: 800; display: grid; place-items: end center; padding-bottom: 4px; flex: none; }
+  .file .n { font-weight: 600; }
+  .file .id { color: var(--faint); font-size: 12px; font-family: ui-monospace, Menlo, monospace; }
+  .st { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 650; border-radius: 99px; padding: 3px 10px; white-space: nowrap; }
+  .st.ok { background: var(--ok-soft); color: var(--ok); }
+  .st.warn { background: var(--warn-soft); color: var(--warn); }
+  .st.run { background: var(--accent-soft); color: var(--accent); }
+  .num { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .right { text-align: right; }
+  .confirm td { background: var(--danger-soft); }
+  .confirm .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; color: var(--danger); font-size: 13.5px; }
+  .foot { color: var(--faint); font-size: 12.5px; margin-top: 12px; }
+  @media (max-width: 720px) {
+    header { grid-template-columns: 1fr auto; padding: 12px 16px; gap: 10px; }
+    .tools { display: none; }
+    .wrap, .wide { padding-left: 16px; padding-right: 16px; }
+    .ask h1 { font-size: 26px; margin-top: 22px; }
+    .phase { flex-wrap: wrap; gap: 8px 14px; }
+    .sources { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .drop { flex-direction: column; align-items: flex-start; }
+    .col-extra { display: none; }
+    table, tbody, tr, td { display: block; }
+    tr.head { display: none; }
+    tr.doc { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; padding: 14px; border-bottom: 1px solid var(--line-2); }
+    tr.doc td { padding: 0; border: 0; }
+    tr.doc .c-file { grid-column: 1 / -1; }
+    .confirm td { padding: 14px; }
+    .confirm .row { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="mark"></div>PolicyDesk</div>
+  <nav class="switch"><a href="#ask" data-view="ask">提问</a><a href="#docs" data-view="docs">文档 <span class="count">2</span></a></nav>
+  <div class="tools"><span class="pill">界面语言 · 中文 / EN</span></div>
+</header>
+
+<section class="view" id="view-ask">
+  <div class="wrap">
+    <div class="ask">
+      <h1>关于公司制度，直接问。</h1>
+      <div class="search">
+        <div class="q">L3 员工在一线城市出差，每晚住宿上限是多少？超出部分怎么办？</div>
+        <div class="row"><span class="scope">在 2 份文档中搜索 · 用中文或英文提问</span><div class="go">↑</div></div>
+      </div>
+    </div>
+
+    <div class="phase"><span class="done">检索制度原文</span><span class="done">重排证据</span><span class="now">撰写回答</span></div>
+
+    <div class="label">来源 · 4 段证据</div>
+    <div class="sources">
+      <div class="src"><div class="t">职级 L3-L4：一线城市 700 元/晚，其他城市 500 元/晚</div><div class="f"><span class="ico table">表</span>差旅报销制度 · 第 1 页</div></div>
+      <div class="src"><div class="t">超出标准的部分由员工自行承担。丢失发票须由部门负责人书面确认。</div><div class="f"><span class="ico text">文</span>差旅报销制度 · 第 2 页</div></div>
+      <div class="src"><div class="t">员工应在出差结束后十个工作日内提交报销申请，并附上发票原件。</div><div class="f"><span class="ico text">文</span>差旅报销制度 · 第 1 页</div></div>
+      <div class="src low">＋1 段<br>相关度低</div>
+    </div>
+
+    <div class="label">回答</div>
+    <div class="answer">
+      <p>L3–L4 员工在一线城市出差，住宿上限为 <b>每晚 700 元</b>（其他城市 500 元）。</p>
+      <p>超出标准的部分 <b>由员工自行承担</b>。报销需在出差结束后 10 个工作日内提交，并附发票原件；发票丢失时须由部门负责人书面确认。</p>
+    </div>
+    <div class="actions"><span class="pill">⧉ 复制回答</span><span class="pill">↻ 换个问法</span></div>
+
+    <details open>
+      <summary><span>查看原文摘录 · 相关度为重排模型的相对分数，不代表答案的可信度</span><span>▾</span></summary>
+      <div class="ex"><div class="ex-h"><span>① 差旅报销制度.pdf · 第 1 页 · 表格</span><span>0.94</span></div>
+<pre>| 职级  | 一线城市（元/晚） | 其他城市（元/晚） |
+| L1-L2 | 500 | 350 |
+| L3-L4 | 700 | 500 |
+| L5    | 900 | 650 |</pre></div>
+      <div class="ex"><div class="ex-h"><span>② 差旅报销制度.pdf · 第 2 页 · 正文</span><span>0.81</span></div>
+<pre>四、注意事项
+1 超出标准的部分由员工自行承担。
+2 丢失发票须由部门负责人书面确认。</pre></div>
+    </details>
+
+    <div class="label">试试这些问题</div>
+    <div class="related"><div>报销申请需要在多少天内提交？</div><div>Who approves business class flights?</div><div>请假 4 个工作日需要谁审批？</div></div>
+    <div class="disclaimer">回答仅依据检索到的制度原文。未解决的问题请联系 HR 或财务。</div>
+  </div>
+</section>
+
+<section class="view" id="view-docs">
+  <div class="wide">
+    <div class="doc-head">
+      <div><h2>文档库</h2><p>上传公司制度 PDF。表格和图片会被解析，员工即可用中文或英文提问。</p></div>
+    </div>
+
+    <div class="drop"><div><b>拖入 PDF，或点击选择</b><span>单个文件 ≤ 200MB · 同一份文件不会重复添加</span></div><span class="btn primary">＋ 选择 PDF</span></div>
+
+    <div class="uploading">
+      <div class="top"><span>正在添加 <b>信息安全分级规范.pdf</b></span><span style="color:var(--muted);font-size:13px">大文件可能需要几分钟</span></div>
+      <div class="steps"><span class="done">上传</span><span class="now">解析版面与表格</span><span>描述图片</span><span>写入知识库</span></div>
+      <div class="bar"><i></i></div>
+    </div>
+
+    <div class="notice"><b>已添加 差旅报销制度.pdf（14 段）。</b> 有 1 张图片无法生成文字描述，已跳过，其内容暂不可检索；其余内容已入库。
+      <ul><li>第 1 页 · 图 1 报销审批流程 — RuntimeError: quota exceeded</li></ul></div>
+
+    <div class="filters"><span class="filter on">全部 2</span><span class="filter">可检索 2</span><span class="filter">有跳过图片 1</span></div>
+
+    <div class="table">
+      <table>
+        <tr class="head"><th>文件</th><th>状态</th><th class="right col-extra">段数</th><th class="col-extra">添加时间</th><th class="right"></th></tr>
+        <tr class="doc">
+          <td class="c-file"><div class="file"><span class="pdf">PDF</span><div><div class="n">差旅报销制度.pdf</div><div class="id">pdf-69890644d44e</div></div></div></td>
+          <td><span class="st warn">● 1 张图片已跳过</span></td>
+          <td class="right num col-extra">14</td><td class="num col-extra">今天 08:30</td>
+          <td class="right"><span class="btn sm del">删除</span></td>
+        </tr>
+        <tr class="doc">
+          <td class="c-file"><div class="file"><span class="pdf">PDF</span><div><div class="n">Employee_Leave_Policy.pdf</div><div class="id">pdf-0b1c7e22a9f3</div></div></div></td>
+          <td><span class="st ok">● 可检索</span></td>
+          <td class="right num col-extra">6</td><td class="num col-extra">昨天 10:12</td>
+          <td class="right"><span class="btn sm del">删除</span></td>
+        </tr>
+        <tr class="confirm"><td colspan="5"><div class="row"><span>确定从知识库删除 Employee_Leave_Policy.pdf？删除后员工将无法再搜到它，可以重新上传。</span><span><span class="btn sm">取消</span> <span class="btn sm del-solid">删除</span></span></div></td></tr>
+      </table>
+    </div>
+    <div class="foot">"段数"是文档切分后用于检索的片段数量。跳过的图片可以在修复后删除文档并重新上传。</div>
+  </div>
+</section>
+
+<script>
+  // Open with #docs for the document view; add ,light for the light theme (e.g. #docs,light).
+  function render() {
+    const hash = location.hash.replace("#", "").split(",");
+    const view = hash.includes("docs") ? "docs" : "ask";
+    document.documentElement.dataset.theme = hash.includes("light") ? "light" : "dark";
+    document.querySelectorAll(".view").forEach(el => el.classList.toggle("on", el.id === "view-" + view));
+    document.querySelectorAll(".switch a").forEach(a => a.classList.toggle("on", a.dataset.view === view));
+  }
+  document.querySelectorAll(".switch a").forEach(a => a.addEventListener("click", event => {
+    event.preventDefault();
+    location.hash = a.dataset.view + (location.hash.includes("light") ? ",light" : "");
+  }));
+  window.addEventListener("hashchange", render);
+  render();
+</script>
+</body>
+</html>
