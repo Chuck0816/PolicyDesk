@@ -43,7 +43,19 @@ def run_mineru(pdf, output_dir):
     输出["mineru", "-p", "/docs/差旅政策.pdf", "-o", "/tmp/abc"]命令行参数
     """
     command = [*shlex.split(MINERU_COMMAND), "-p", str(pdf), "-o", str(output_dir)]
-    subprocess.run(command, check=True)
+    try:
+        subprocess.run(command, check=True)
+    except FileNotFoundError as error:
+        raise ValueError(
+            f"MinerU was not found ({command[0]!r}). Install MinerU in its own environment, "
+            "set MINERU_COMMAND in .env to the full path of its `mineru` executable, "
+            "then restart PolicyDesk."
+        ) from error
+    except subprocess.CalledProcessError as error:
+        raise RuntimeError(
+            f"MinerU stopped with exit code {error.returncode} while parsing {pdf.name}. "
+            "See the terminal output for its error."
+        ) from error
     # 查找json文件 .rglob(模式)->递归模式
     # pdf.stem
     # 文件名去掉扩展名的部分：

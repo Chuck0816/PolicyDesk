@@ -143,3 +143,15 @@ def test_only_pdf_files_are_accepted(knowledge_base, tmp_path):
 def test_deleting_an_unknown_document_is_rejected(knowledge_base):
     with pytest.raises(ValueError, match="not in the knowledge base"):
         pdf_ingestion.delete_pdf(knowledge_base[0], "pdf-missing")
+
+
+def test_missing_mineru_explains_how_to_configure_it(monkeypatch, tmp_path):
+    monkeypatch.setattr(pdf_ingestion, "MINERU_COMMAND", "/missing/mineru-venv/bin/mineru")
+    with pytest.raises(ValueError, match="set MINERU_COMMAND in .env"):
+        pdf_ingestion.run_mineru(tmp_path / "policy.pdf", tmp_path)
+
+
+def test_mineru_failure_names_the_pdf(monkeypatch, tmp_path):
+    monkeypatch.setattr(pdf_ingestion, "MINERU_COMMAND", "false")
+    with pytest.raises(RuntimeError, match="exit code 1 while parsing policy.pdf"):
+        pdf_ingestion.run_mineru(tmp_path / "policy.pdf", tmp_path)
