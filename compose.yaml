@@ -35,7 +35,26 @@ services:
     volumes:
       - chroma_data:/data
 
+  neo4j:
+    image: neo4j:5.26-community
+    profiles: ["oncall"]
+    environment:
+      NEO4J_AUTH: neo4j/${NEO4J_PASSWORD:-}
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
+    ports:
+      - "127.0.0.1:7474:7474"
+      - "127.0.0.1:7687:7687"
+    volumes:
+      - neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:7474 || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
 volumes:
   mongo_data:
   redis_data:
   chroma_data:
+  neo4j_data:

@@ -1,0 +1,54 @@
+teams:
+  - {name: team-web, escalates_to: team-sre}
+  - {name: team-checkout, escalates_to: team-sre}
+  - {name: team-payments, escalates_to: team-sre}
+  - {name: team-catalog, escalates_to: team-sre}
+  - {name: team-sre}
+services:
+  - name: frontend
+    team: team-web
+    description: Web storefront.
+    aliases: [前端]
+    depends_on:
+      - {target: checkout, type: rpc}
+      - {target: product-catalog, type: rpc}
+      - {target: cart, type: rpc}
+  - name: checkout
+    team: team-checkout
+    description: Places orders.
+    aliases: [结账服务]
+    slo: "99% of PlaceOrder under 800 ms"
+    depends_on:
+      - {target: cart, type: rpc}
+      - {target: payment, type: rpc}
+      - {target: product-catalog, type: rpc}
+      - {target: kafka, type: async}
+  - name: payment
+    team: team-payments
+    description: Charges cards.
+    aliases: [支付服务]
+  - name: cart
+    team: team-checkout
+    description: Shopping cart.
+    aliases: [购物车]
+    depends_on:
+      - {target: valkey-cart, type: cache}
+  - name: product-catalog
+    team: team-catalog
+    description: Product data.
+    depends_on:
+      - {target: postgresql, type: db}
+  - name: fraud-detection
+    team: team-payments
+    description: Consumes orders from Kafka.
+    depends_on:
+      - {target: kafka, type: async}
+datastores:
+  - {name: valkey-cart, team: team-checkout, description: Cart cache.}
+  - {name: postgresql, team: team-catalog, description: Catalog database.}
+  - {name: kafka, team: team-sre, description: Order events.}
+alerts:
+  - name: CartCacheConnectionsHigh
+    service: cart
+    metric: valkey_connected_clients
+    runbook: {file: cart.md, section: Cache connection pool exhausted}

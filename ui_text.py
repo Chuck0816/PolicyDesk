@@ -169,7 +169,135 @@ TEXT = {
 }
 
 
-def translate(language, key, **values):
-    """Return interface text in the chosen language, filled with the given values."""
-    text = TEXT.get(language, TEXT[DEFAULT_LANGUAGE])[key]
+# Keys shared by both domains that only the on-call screens use.
+SHARED = {
+    "zh": {
+        "mode_label": "检索模式",
+        "mode_hybrid": "混合检索",
+        "mode_graph": "图检索",
+        "mode_hybrid+graph": "混合 + 图",
+        "compare": "并排对比（混合 vs 混合 + 图）",
+        "graph_unavailable": "图检索暂不可用（{reason}），将使用混合检索。",
+        "graph_paths_label": "图推理路径 · {count} 条",
+        "structured_label": "结构化结果（用于评测）",
+        "timing": "检索 {retrieval} 秒 · 首字 {first} 秒 · 生成 {generation} 秒 · 共 {total} 秒 · "
+        "LLM 调用 {calls} 次 · 约 {tokens} tokens（估算）",
+        "step_extract": "抽取图谱",
+        "md_type": "Markdown 类型",
+        "md_auto": "自动识别",
+        "md_runbook": "Runbook",
+        "md_postmortem": "故障复盘",
+        "catalog_title": "服务目录",
+        "catalog_status": "已导入 {services} 个服务，{alerts} 条告警。",
+        "catalog_missing": "还没有导入服务目录。先导入它，再添加故障复盘。",
+        "catalog_alerts": "告警定义（可选）",
+        "catalog_button": "导入服务目录",
+        "catalog_imported": "已导入服务目录：{services} 个服务，{teams} 个团队，{alerts} 条告警。",
+        "catalog_failed": "无法导入服务目录。{error}",
+        "status_relations": "图谱 {count} 条关系",
+        "status_services": "{count} 个服务",
+        "type_pdf": "PDF",
+        "type_runbook": "Runbook",
+        "type_postmortem": "故障复盘",
+        "type_service_catalog": "服务目录",
+        "graph_report": "图谱抽取：{relations} 条关系；{empty} 个片段没有抽到事实；"
+        "未对齐而丢弃：{dropped}",
+        "needs_graph": "On-call 知识库的增删需要连接 Neo4j：{reason}",
+    },
+    "en": {
+        "mode_label": "Retrieval mode",
+        "mode_hybrid": "Hybrid",
+        "mode_graph": "Graph",
+        "mode_hybrid+graph": "Hybrid + graph",
+        "compare": "Compare side by side (hybrid vs hybrid + graph)",
+        "graph_unavailable": "Graph retrieval is unavailable ({reason}); using hybrid retrieval.",
+        "graph_paths_label": "Graph reasoning · {count}",
+        "structured_label": "Structured result (for evaluation)",
+        "timing": "Retrieval {retrieval}s · first token {first}s · generation {generation}s · "
+        "total {total}s · {calls} LLM calls · ~{tokens} tokens (estimated)",
+        "step_extract": "Extract graph",
+        "md_type": "Markdown type",
+        "md_auto": "Detect",
+        "md_runbook": "Runbook",
+        "md_postmortem": "Postmortem",
+        "catalog_title": "Service catalog",
+        "catalog_status": "{services} services and {alerts} alerts imported.",
+        "catalog_missing": "No service catalog yet. Import it before adding postmortems.",
+        "catalog_alerts": "Alert definitions (optional)",
+        "catalog_button": "Import catalog",
+        "catalog_imported": "Imported the catalog: {services} services, {teams} teams, "
+        "{alerts} alerts.",
+        "catalog_failed": "Could not import the catalog. {error}",
+        "status_relations": "{count} graph relations",
+        "status_services": "{count} services",
+        "type_pdf": "PDF",
+        "type_runbook": "Runbook",
+        "type_postmortem": "Postmortem",
+        "type_service_catalog": "Service catalog",
+        "graph_report": "Graph extraction: {relations} relations; {empty} chunk(s) without "
+        "facts; dropped as not in the catalog: {dropped}",
+        "needs_graph": "Changing an on-call knowledge base needs Neo4j: {reason}",
+    },
+}
+
+# On-call wording that replaces the policy wording for the same keys.
+ONCALL = {
+    "zh": {
+        "ask_title": "值班排障，直接问。",
+        "phase_search": "检索文档与图谱",
+        "go_docs": "去导入服务目录",
+        "upload_label": "选择 Markdown 或 PDF",
+        "no_docs": "还没有文档。先导入服务目录，再添加 runbook 和故障复盘。",
+        "question_placeholder": (
+            "例如：checkout P99 延迟飙升，同时 payment 错误率上升，根因是什么？"
+        ),
+        "scope": "在 {count} 份文档和服务依赖图中搜索 · 用中文或英文提问",
+        "empty_ask": "还没有文档。先在「文档」页导入服务目录，再添加 runbook 和故障复盘。",
+        "examples": [
+            "如果 product-catalog 不可用，会影响哪些服务？",
+            "checkout 延迟升高，同时 payment 错误率上升，最可能的根因是什么？",
+            "Who owns the currency service and what is the escalation path?",
+        ],
+        "disclaimer": (
+            "回答只依据 runbook、故障复盘和服务目录；不会执行任何操作。不确定时请升级给负责团队。"
+        ),
+        "docs_intro": "导入服务目录，并上传 runbook 和故障复盘（Markdown），也可以上传 PDF。",
+        "upload_hint": "PDF 或 Markdown · 同一份文件不会重复添加 · 故障复盘会抽取图谱",
+    },
+    "en": {
+        "ask_title": "On-call troubleshooting, just ask.",
+        "phase_search": "Search documents and graph",
+        "go_docs": "Import the catalog",
+        "upload_label": "Choose a Markdown file or PDF",
+        "no_docs": "No documents yet. Import the service catalog, then add runbooks and "
+        "postmortems.",
+        "question_placeholder": "For example: checkout p99 latency is up and payment errors "
+        "are rising. What is the likely root cause?",
+        "scope": "Searching {count} documents and the service graph · Chinese or English",
+        "empty_ask": "No documents yet. Import the service catalog on the Documents page, "
+        "then add runbooks and postmortems.",
+        "examples": [
+            "If product-catalog is unavailable, which services are affected?",
+            "checkout 延迟升高，同时 payment 错误率上升，最可能的根因是什么？",
+            "Who owns the currency service and what is the escalation path?",
+        ],
+        "disclaimer": "Answers use only runbooks, postmortems and the service catalog; nothing "
+        "is executed. When unsure, escalate to the owning team.",
+        "docs_intro": "Import the service catalog and add runbooks and postmortems "
+        "(Markdown); PDFs work too.",
+        "upload_hint": "PDF or Markdown · the same file is never added twice · "
+        "postmortems are added to the graph",
+    },
+}
+
+
+def translate(language, key, domain="policy", **values):
+    """Return interface text in the chosen language and domain, filled with the values."""
+    language = language if language in TEXT else DEFAULT_LANGUAGE
+    if domain == "oncall" and key in ONCALL[language]:
+        text = ONCALL[language][key]
+    elif key in SHARED[language]:
+        text = SHARED[language][key]
+    else:
+        text = TEXT[language][key]
     return text.format(**values) if values else text

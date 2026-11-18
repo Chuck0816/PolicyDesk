@@ -33,6 +33,20 @@ QUERY_REWRITE_PROMPT = PromptTemplate(
     "Question: {query}\nSearch query:"
 )
 
+ONCALL_QA_PROMPT = PromptTemplate(
+    "You are an on-call assistant for an e-commerce platform. Use only the context below. "
+    "Lines starting with 'Graph path' or 'Graph reasoning' come from the service dependency "
+    "graph; everything else is document text. Answer in the same language as the question.\n"
+    "Structure the answer as: likely root cause or direct answer, impact, steps to take, and "
+    "owner team with escalation path, skipping parts the question does not need. Keep "
+    "'Document evidence' (cite file and section) separate from 'Graph reasoning'. If the "
+    "context is insufficient, say you are not sure and recommend escalating to the owning team. "
+    "Never invent services, commands, or teams.\n"
+    "Finish with one fenced json block: "
+    '{"root_cause_services": [], "affected_services": [], "owner_team": null, "uncertain": false}\n'
+    "Context:\n{context_str}\nQuestion: {query_str}\nAnswer:"
+)
+
 
 if __name__ == "__main__":
     for prompt in (QA_PROMPT, CHAT_PROMPT, RICH_PROMPT):
