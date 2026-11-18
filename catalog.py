@@ -238,15 +238,21 @@ def save_catalog_source(graph_store, catalog_text, alerts_text=""):
     )
 
 
-def load_catalog_from_graph(graph_store):
-    """Return the imported catalog, or None if no catalog has been imported yet."""
+def catalog_source(graph_store):
+    """The imported YAML as {"catalog": text, "alerts": text}, or None before any import."""
     rows = graph_store.structured_query(
         "MATCH (c:CatalogSource {id: $id}) RETURN c.catalog AS catalog, c.alerts AS alerts",
         param_map={"id": CATALOG_SOURCE_ID},
     )
     if not rows or not rows[0]["catalog"]:
         return None
-    return parse_catalog(rows[0]["catalog"], rows[0]["alerts"] or "")
+    return {"catalog": rows[0]["catalog"], "alerts": rows[0]["alerts"] or ""}
+
+
+def load_catalog_from_graph(graph_store):
+    """Return the imported catalog, or None if no catalog has been imported yet."""
+    source = catalog_source(graph_store)
+    return parse_catalog(source["catalog"], source["alerts"]) if source else None
 
 
 def import_catalog(graph_store, catalog):

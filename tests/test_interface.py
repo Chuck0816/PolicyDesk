@@ -487,3 +487,28 @@ def test_oncall_catalog_row_cannot_be_deleted(backend, oncall):
     assert not app.exception
     keys = {item.key for item in app.button}
     assert "delete-catalog" not in keys and "delete-md-1" in keys
+
+
+def test_oncall_alerts_alone_update_the_imported_catalog(backend, oncall, monkeypatch):
+    source = Mock(return_value={"catalog": "services: [stored]", "alerts": "alerts: []"})
+    monkeypatch.setattr("kb.service_catalog.catalog_source", source)
+    app = open_documents(run_app())
+    assert app.button(key="import").disabled
+    alerts = next(item for item in app.file_uploader if item.key == "alerts-0")
+    alerts.upload("alerts.yaml", b"alerts: [new]", "application/x-yaml").run()
+    assert not app.button(key="import").disabled
+    assert any(oncall_text("alerts_only") in item.value for item in app.caption)
+    app = app.button(key="import").click().run()
+    assert not app.exception
+    args = oncall.import_catalog.call_args.args
+    assert args[:2] == ("services: [stored]", "alerts: [new]")
+    assert args[4] is oncall.graph_store
+
+
+def test_oncall_alerts_alone_need_a_catalog_first(backend, oncall, monkeypatch):
+    monkeypatch.setattr("kb.connect_graph", Mock(return_value=(object(), None)))
+    app = open_documents(run_app())
+    alerts = next(item for item in app.file_uploader if item.key == "alerts-0")
+    alerts.upload("alerts.yaml", b"alerts: []", "application/x-yaml").run()
+    assert app.button(key="import").disabled
+    assert any(oncall_text("catalog_needs_file") in item.value for item in app.caption)

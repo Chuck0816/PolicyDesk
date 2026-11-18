@@ -679,9 +679,15 @@ def import_catalog_upload(catalog_file, alerts_file, slot):
         if problem:
             raise ValueError(t("needs_graph", reason=problem))
         alerts = alerts_file.getvalue().decode("utf-8") if alerts_file else ""
-        catalog, _ = kb.import_catalog(
-            catalog_file.getvalue().decode("utf-8"), alerts, context, collection, graph_store
-        )
+        if catalog_file is not None:
+            catalog_text = catalog_file.getvalue().decode("utf-8")
+        else:
+            # Only new alerts: keep the service catalog that is already in Neo4j.
+            source = kb.service_catalog.catalog_source(graph_store)
+            if source is None:
+                raise ValueError(t("catalog_needs_file"))
+            catalog_text = source["catalog"]
+        catalog, _ = kb.import_catalog(catalog_text, alerts, context, collection, graph_store)
     except Exception as error:
         LOGGER.exception("Catalog import failed")
         failure = {"kind": "error", "title": t("catalog_failed", error=error)}
@@ -809,9 +815,13 @@ def render_catalog_import():
         alerts_file = right.file_uploader(
             t("catalog_alerts"), type=["yaml", "yml"], key=f"alerts-{round_id}"
         )
+        # Alerts alone update the imported catalog's alerts; a first import needs the catalog.
+        ready = catalog_file is not None or (alerts_file is not None and catalog is not None)
         clicked = button.button(
-            t("catalog_button"), disabled=catalog_file is None, width="stretch", key="import"
+            t("catalog_button"), disabled=not ready, width="stretch", key="import"
         )
+        if alerts_file is not None and catalog_file is None:
+            st.caption(t("alerts_only") if catalog is not None else t("catalog_needs_file"))
     slot = st.empty()
     if clicked:
         import_catalog_upload(catalog_file, alerts_file, slot)

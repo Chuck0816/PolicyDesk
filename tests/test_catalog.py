@@ -161,3 +161,13 @@ def test_symptom_vocabulary():
     assert canonical_symptom("disk full") is None
     assert not contains_term("download the logs", "down")
     assert contains_term("服务宕机了", "宕机")
+
+
+def test_catalog_source_returns_the_saved_yaml():
+    store = RecordingStore()
+    assert service_catalog.catalog_source(store) is None
+    service_catalog.save_catalog_source(store, "services: []", "alerts: []")
+    assert service_catalog.catalog_source(store) == {
+        "catalog": "services: []",
+        "alerts": "alerts: []",
+    }
