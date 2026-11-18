@@ -192,6 +192,8 @@ SHARED = {
         "catalog_missing": "还没有导入服务目录。先导入它，再添加故障复盘。",
         "catalog_alerts": "告警定义（可选）",
         "catalog_button": "导入服务目录",
+        "alerts_only": "只上传告警时，会沿用已导入的服务目录，并替换原来的告警定义。",
+        "catalog_needs_file": "第一次导入需要服务目录文件；告警定义不能单独导入。",
         "catalog_imported": "已导入服务目录：{services} 个服务，{teams} 个团队，{alerts} 条告警。",
         "catalog_failed": "无法导入服务目录。{error}",
         "status_relations": "图谱 {count} 条关系",
@@ -225,6 +227,10 @@ SHARED = {
         "catalog_missing": "No service catalog yet. Import it before adding postmortems.",
         "catalog_alerts": "Alert definitions (optional)",
         "catalog_button": "Import catalog",
+        "alerts_only": "With only alerts, the imported catalog is kept and its alerts are "
+        "replaced.",
+        "catalog_needs_file": "The first import needs the catalog file; alerts cannot be "
+        "imported on their own.",
         "catalog_imported": "Imported the catalog: {services} services, {teams} teams, "
         "{alerts} alerts.",
         "catalog_failed": "Could not import the catalog. {error}",

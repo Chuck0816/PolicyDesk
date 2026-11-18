@@ -44,6 +44,9 @@ def test_aliases_resolve_generated_and_declared_names(catalog):
 def test_find_components_in_mixed_language_text(catalog):
     found = catalog.find_components("支付服务挂了会影响谁？checkout 也慢，product-catalog 呢")
     assert found == {"payment", "checkout", "product-catalog"}
+    # The longest alias wins: "valkey-cart" is not also "cart".
+    assert catalog.find_components("谁负责 valkey-cart？") == {"valkey-cart"}
+    assert catalog.find_components("cart 和 valkey-cart") == {"cart", "valkey-cart"}
     # Whole words only: "cart" must not match inside "carton".
     assert catalog.find_components("the carton shipment") == set()
     assert catalog.find_alerts("CartCacheConnectionsHigh is firing") == {"CartCacheConnectionsHigh"}
@@ -158,3 +161,13 @@ def test_symptom_vocabulary():
     assert canonical_symptom("disk full") is None
     assert not contains_term("download the logs", "down")
     assert contains_term("服务宕机了", "宕机")
+
+
+def test_catalog_source_returns_the_saved_yaml():
+    store = RecordingStore()
+    assert service_catalog.catalog_source(store) is None
+    service_catalog.save_catalog_source(store, "services: []", "alerts: []")
+    assert service_catalog.catalog_source(store) == {
+        "catalog": "services: []",
+        "alerts": "alerts: []",
+    }

@@ -42,8 +42,17 @@ class Catalog:
         """Return canonical components mentioned anywhere in free text."""
         # Aliases are stored normalized ("product catalog"), so normalize the text the same way.
         normalized = _normalize(text)
+        spans = [
+            (start, start + len(alias), name)
+            for alias, name in self.alias_index.items()
+            if contains_term(normalized, alias)
+            for start in _occurrences(normalized, alias)
+        ]
+        # "valkey-cart" also contains the alias "cart"; keep only the longest overlapping match.
         return {
-            name for alias, name in self.alias_index.items() if contains_term(normalized, alias)
+            name
+            for start, end, name in spans
+            if not any(s <= start and end <= e and (e - s) > (end - start) for s, e, _ in spans)
         }
 
     def find_alerts(self, text):
@@ -64,6 +73,13 @@ class Catalog:
             path.append(nxt)
             seen.add(nxt)
         return path
+
+
+def _occurrences(text, term):
+    start = text.find(term)
+    while start != -1:
+        yield start
+        start = text.find(term, start + 1)
 
 
 def _normalize(text):
@@ -222,15 +238,21 @@ def save_catalog_source(graph_store, catalog_text, alerts_text=""):
     )
 
 
-def load_catalog_from_graph(graph_store):
-    """Return the imported catalog, or None if no catalog has been imported yet."""
+def catalog_source(graph_store):
+    """The imported YAML as {"catalog": text, "alerts": text}, or None before any import."""
     rows = graph_store.structured_query(
         "MATCH (c:CatalogSource {id: $id}) RETURN c.catalog AS catalog, c.alerts AS alerts",
         param_map={"id": CATALOG_SOURCE_ID},
     )
     if not rows or not rows[0]["catalog"]:
         return None
-    return parse_catalog(rows[0]["catalog"], rows[0]["alerts"] or "")
+    return {"catalog": rows[0]["catalog"], "alerts": rows[0]["alerts"] or ""}
+
+
+def load_catalog_from_graph(graph_store):
+    """Return the imported catalog, or None if no catalog has been imported yet."""
+    source = catalog_source(graph_store)
+    return parse_catalog(source["catalog"], source["alerts"]) if source else None
 
 
 def import_catalog(graph_store, catalog):
