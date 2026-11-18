@@ -13,3 +13,4 @@ streamlit==1.66.1
 llama-index-retrievers-bm25==0.8.0
 llama-index-postprocessor-flag-embedding-reranker==0.6.0
 FlagEmbedding==1.4.2
+llama-index-graph-stores-neo4j==0.9.0
