@@ -1,0 +1,97 @@
+# Demo service catalog for PolicyDesk's on-call mode (a small online shop).
+teams:
+  - {name: team-web, escalates_to: team-sre}
+  - {name: team-checkout, escalates_to: team-sre}
+  - {name: team-payments, escalates_to: team-sre}
+  - {name: team-catalog, escalates_to: team-sre}
+  - {name: team-data, escalates_to: team-sre}
+  - {name: team-sre}
+
+services:
+  - name: frontend
+    team: team-web
+    description: Web storefront that renders pages and calls backend services.
+    aliases: [前端, web, storefront]
+    slo: "99.5% of page loads under 1 s"
+    depends_on:
+      - {target: checkout, type: rpc}
+      - {target: cart, type: rpc}
+      - {target: product-catalog, type: rpc}
+      - {target: recommendation, type: rpc}
+      - {target: ad, type: rpc}
+  - name: checkout
+    team: team-checkout
+    description: Places orders; orchestrates cart, payment, currency, and shipping.
+    aliases: [结账服务, 下单服务]
+    slo: "99% of PlaceOrder under 800 ms"
+    depends_on:
+      - {target: cart, type: rpc}
+      - {target: payment, type: rpc}
+      - {target: product-catalog, type: rpc}
+      - {target: currency, type: rpc}
+      - {target: shipping, type: rpc}
+      - {target: kafka, type: async}
+  - name: cart
+    team: team-checkout
+    description: Stores shopping carts.
+    aliases: [购物车]
+    depends_on:
+      - {target: valkey-cart, type: cache}
+  - name: payment
+    team: team-payments
+    description: Charges credit cards through the external card gateway.
+    aliases: [支付服务, 支付]
+    slo: "99.9% of charges succeed"
+  - name: currency
+    team: team-payments
+    description: Converts prices between currencies.
+    aliases: [汇率服务]
+  - name: product-catalog
+    team: team-catalog
+    description: Product data and search.
+    aliases: [商品目录, 商品服务]
+    depends_on:
+      - {target: postgresql, type: db}
+  - name: recommendation
+    team: team-catalog
+    description: Product recommendations.
+    aliases: [推荐服务]
+    depends_on:
+      - {target: product-catalog, type: rpc}
+  - name: shipping
+    team: team-checkout
+    description: Shipping cost and tracking IDs.
+    aliases: [物流服务]
+    depends_on:
+      - {target: quote, type: rpc}
+  - name: quote
+    team: team-checkout
+    description: Calculates shipping quotes.
+  - name: ad
+    team: team-web
+    description: Serves text ads.
+    aliases: [广告服务]
+  - name: email
+    team: team-checkout
+    description: Sends order confirmation emails from order events.
+    aliases: [邮件服务]
+    depends_on:
+      - {target: kafka, type: async}
+  - name: fraud-detection
+    team: team-payments
+    description: Scores orders for fraud from order events.
+    aliases: [风控服务, 反欺诈]
+    depends_on:
+      - {target: kafka, type: async}
+  - name: accounting
+    team: team-data
+    description: Books orders into the ledger.
+    aliases: [记账服务]
+    depends_on:
+      - {target: kafka, type: async}
+      - {target: postgresql, type: db}
+
+datastores:
+  - {name: valkey-cart, team: team-checkout, description: Cache that holds carts., aliases: [购物车缓存]}
+  - {name: postgresql, team: team-catalog, description: Product and ledger database., aliases: [数据库, postgres]}
+  - {name: kafka, team: team-sre, description: Order event stream., aliases: [消息队列]}

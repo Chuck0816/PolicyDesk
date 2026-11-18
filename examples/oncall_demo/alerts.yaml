@@ -1,0 +1,21 @@
+alerts:
+  - name: CheckoutLatencyHigh
+    service: checkout
+    metric: checkout_place_order_p99_ms > 800 for 5m
+    runbook: {file: checkout.md, section: Latency high}
+  - name: PaymentErrorRateHigh
+    service: payment
+    metric: payment_charge_error_ratio > 2% for 5m
+    runbook: {file: payment.md, section: Charge errors}
+  - name: CartCacheConnectionsHigh
+    service: cart
+    metric: valkey_connected_clients > 900
+    runbook: {file: cart.md, section: Cache connection pool exhausted}
+  - name: KafkaConsumerLagHigh
+    service: fraud-detection
+    metric: kafka_consumergroup_lag > 10000 for 10m
+    runbook: {file: kafka.md, section: Consumer lag}
+  - name: CatalogDbSlowQueries
+    service: product-catalog
+    metric: pg_stat_activity_wait_event_lock > 20
+    runbook: {file: product-catalog.md, section: Database lock contention}

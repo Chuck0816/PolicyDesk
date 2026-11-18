@@ -42,8 +42,17 @@ class Catalog:
         """Return canonical components mentioned anywhere in free text."""
         # Aliases are stored normalized ("product catalog"), so normalize the text the same way.
         normalized = _normalize(text)
+        spans = [
+            (start, start + len(alias), name)
+            for alias, name in self.alias_index.items()
+            if contains_term(normalized, alias)
+            for start in _occurrences(normalized, alias)
+        ]
+        # "valkey-cart" also contains the alias "cart"; keep only the longest overlapping match.
         return {
-            name for alias, name in self.alias_index.items() if contains_term(normalized, alias)
+            name
+            for start, end, name in spans
+            if not any(s <= start and end <= e and (e - s) > (end - start) for s, e, _ in spans)
         }
 
     def find_alerts(self, text):
@@ -64,6 +73,13 @@ class Catalog:
             path.append(nxt)
             seen.add(nxt)
         return path
+
+
+def _occurrences(text, term):
+    start = text.find(term)
+    while start != -1:
+        yield start
+        start = text.find(term, start + 1)
 
 
 def _normalize(text):
